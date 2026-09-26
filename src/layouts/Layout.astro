@@ -1,0 +1,157 @@
+---
+import '../styles/global.css';
+import { person } from '../data/content';
+
+interface Props {
+  title?: string;
+  description?: string;
+  ogImage?: string;
+}
+
+const {
+  title = `${person.name} | ${person.title}`,
+  description = `AVP of Data Engineering, AI & Products at Easyrewardz. Leads a ${person.teamSize}-person team. Built real-time CDP for 100M+ customer profiles. 13B+ annual events processed. Financial Express FuTech Awards 2024 winner.`,
+  ogImage = `${person.siteUrl}/og.png`,
+} = Astro.props;
+
+const canonical = person.siteUrl;
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <link rel="canonical" href={canonical} />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content={canonical} />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:image" content={ogImage} />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={title} />
+  <meta name="twitter:description" content={description} />
+  <meta name="twitter:image" content={ogImage} />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <!-- Without JS the scroll-reveal observer never runs, so show everything -->
+  <noscript><style>.reveal, .reveal-stagger > * { opacity: 1 !important; transform: none !important; }</style></noscript>
+
+  <!-- Favicon -->
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+
+  <!-- JSON-LD: Person -->
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": person.name,
+    "jobTitle": person.title,
+    "worksFor": {
+      "@type": "Organization",
+      "name": person.company
+    },
+    "url": person.siteUrl,
+    "email": person.email,
+    "telephone": person.phone,
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Gurugram",
+      "addressCountry": "IN"
+    },
+    "sameAs": [person.linkedin, person.github, person.blog],
+    "award": person.award,
+    "knowsAbout": [
+      "Data Engineering", "Customer Data Platform", "GenAI", "LangGraph",
+      "Apache Kafka", "ClickHouse", "LLM", "Machine Learning", "Product Management",
+      "Agentic AI", "MCP Gateway", "Voice AI"
+    ]
+  })} />
+
+  <!-- Plausible analytics (privacy-friendly) — register this domain at plausible.io -->
+  <script defer data-domain="importashutosh.github.io" src="https://plausible.io/js/script.js"></script>
+</head>
+<body>
+  <slot />
+  <script>
+    // ── Scroll reveal observer ────────────────────────────────────────
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            e.target.classList.add('visible');
+            observer.unobserve(e.target);
+          }
+        });
+      },
+      { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+    );
+
+    document.querySelectorAll('.reveal, .reveal-stagger').forEach(el => {
+      observer.observe(el);
+    });
+
+    // ── Mobile nav toggle ─────────────────────────────────────────────
+    const navToggle = document.getElementById('nav-toggle');
+    const navLinks = document.getElementById('nav-links');
+    const setNavOpen = (open: boolean) => {
+      navLinks?.classList.toggle('open', open);
+      navToggle?.setAttribute('aria-expanded', String(open));
+      navToggle?.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    };
+    navToggle?.addEventListener('click', () => {
+      setNavOpen(!navLinks?.classList.contains('open'));
+    });
+    navLinks?.querySelectorAll('a').forEach(a => a.addEventListener('click', () => setNavOpen(false)));
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setNavOpen(false); });
+
+    // ── Count-up animation ────────────────────────────────────────────
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function countUp(el: Element) {
+      const raw = el.getAttribute('data-target') || '0';
+      const isFloat = raw.includes('.');
+      const end = parseFloat(raw.replace(/[^0-9.]/g, ''));
+      const suffix = raw.replace(/[0-9.]/g, '');
+      const duration = 1200;
+      const start = performance.now();
+      const update = (now: number) => {
+        const progress = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const value = isFloat
+          ? (eased * end).toFixed(1)
+          : Math.floor(eased * end);
+        el.textContent = value + suffix;
+        if (progress < 1) requestAnimationFrame(update);
+      };
+      requestAnimationFrame(update);
+    }
+
+    const countObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            countUp(e.target);
+            countObserver.unobserve(e.target);
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+
+    if (!reduceMotion) {
+      document.querySelectorAll('[data-target]').forEach(el => countObserver.observe(el));
+    }
+  </script>
+</body>
+</html>

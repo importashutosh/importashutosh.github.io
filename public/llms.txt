@@ -1,0 +1,54 @@
+# Kumar Ashutosh — AI-Readable Summary
+
+## Identity
+- Name: Kumar Ashutosh
+- Title: AVP – Data Engineering, AI & Products
+- Company: Easyrewardz
+- Location: Gurugram, India
+- Email: ashutosh.jha3006@gmail.com
+- LinkedIn: https://www.linkedin.com/in/shutupashu/
+- GitHub: https://github.com/importashutosh
+- Blog: https://bit.ly/Dataphilosophy
+- Resume (PDF): https://importashutosh.github.io/resume.pdf
+
+## What I Do
+I lead a 30-person cross-functional squad of data engineers, ML engineers, and product managers at Easyrewardz, reporting to the CEO. I own the product roadmap and P&L for the Zence platform — a suite of 10 enterprise data and AI products serving 100M+ customer profiles.
+
+## Core Metrics
+- 100M+ real-time customer profiles in Zence CDP
+- 13B+ events processed annually (3B SMS + 10B emails)
+- 30 engineers and product managers in my squad
+- 100+ enterprise clients onboarded in 3 months via OneConsent
+- 60% faster insights from Logra RAG analytics pipeline
+- $5M to $12M portfolio ARR growth over 6 years
+
+## Products Built (0-to-1)
+1. Oliver AI — Agentic commerce AI with voice interface (LangGraph, MCP, Ozonetel, Sarvam AI)
+2. Segcon — Real-time customer segmentation at millisecond latency (Kafka, ClickHouse, Polars)
+3. Model Studio — Self-serve ML platform for churn/propensity models (Airflow, Vertex AI, Gemini)
+4. Zence 360 — Cloud-native Customer Data Platform for 100M+ profiles (Spark, Delta Lake, Azure)
+5. Zence Marketing — Campaign automation at 13B+ events/year (Celery, Kafka, Redis)
+6. Zence Commerce — Loyalty and rewards commerce layer (FastAPI, MySQL, Kubernetes)
+7. OneConsent — Enterprise consent management (OPA, ClickHouse, Kafka)
+8. LPaaS — Loyalty-Platform-as-a-Service for mid-market brands
+9. Logra — Analytics and RAG-powered query engine (ClickHouse, LangGraph, Gemini)
+10. MCP Gateway — Agentic infrastructure for tool-calling AI agents
+
+## Awards
+- Financial Express FuTech Awards 2024 — Best Data Analytics Solution (Atlantis/Logra platform)
+
+## Key Technologies
+Data: ClickHouse, Apache Kafka, Redpanda, Apache Spark, Polars, Airflow, Delta Lake, Azure Synapse, AWS Redshift
+AI/GenAI: LangGraph, LiteLLM, MCP, Vertex AI, Gemini, RAG, Sarvam AI, Ozonetel, Smallest.ai
+Infra: Kubernetes, Docker, FastAPI, Redis, Celery, OPA, Azure, AWS
+
+## Career (14 Years)
+- AVP – Data Engineering, AI & Products, Easyrewardz (Sep 2023–Present)
+- Senior Data Product Manager & Architect, Easyrewardz (Oct 2017–Aug 2023)
+- Data Analyst, Home Credit India (Jul 2015–Sep 2017)
+- Business & Data Analyst, Droisys Inc. (Feb–Jul 2015)
+- Data & Technology Analyst, Allura Online/qurly.in (Jul 2012–Feb 2015)
+
+## Education
+- Post Graduate Diploma in Data Science — IMT Ghaziabad (2019–2021)
+- B.Tech Computer Science & Engineering — CET (2008–2012)

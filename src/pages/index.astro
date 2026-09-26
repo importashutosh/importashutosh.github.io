@@ -1,0 +1,260 @@
+---
+import Layout from '../layouts/Layout.astro';
+import {
+  person, hero, stats, products, clients, skills,
+  experience, education, faq
+} from '../data/content';
+
+// FAQ JSON-LD for AEO (Answer Engine Optimization)
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": faq.map(item => ({
+    "@type": "Question",
+    "name": item.q,
+    "acceptedAnswer": {
+      "@type": "Answer",
+      "text": item.a
+    }
+  }))
+};
+---
+
+<Layout>
+  <!-- FAQ schema injected in page body for AEO -->
+  <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+
+  <!-- ── NAV ──────────────────────────────────────────────────────── -->
+  <nav>
+    <div class="nav-inner">
+      <a href="/" class="nav-logo" id="nav-logo">
+        <span class="logo-badge">KA</span>
+        Kumar Ashutosh
+      </a>
+      <button class="nav-mobile-toggle" id="nav-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="#products">Products</a></li>
+        <li><a href="#skills">Stack</a></li>
+        <li><a href="#experience">Career</a></li>
+        <li><a href="#faq">AEO / FAQ</a></li>
+        <li><a href={person.linkedin} target="_blank" rel="noopener">LinkedIn ↗</a></li>
+        <li><a href={person.calendly} target="_blank" rel="noopener" class="nav-cta">Book a Call</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main>
+
+    <!-- ── HERO ───────────────────────────────────────────────────── -->
+    <section class="container" style="padding-top: 0;">
+      <div class="hero" id="hero">
+        <!-- Left copy -->
+        <div>
+          <div class="award-tag">
+            🏆 {person.award}
+          </div>
+          <h1 class="hero-headline">
+            {hero.headline.split('100M+').map((part, i) => (
+              i === 0
+                ? <>{part}<span class="accent">100M+</span></>
+                : <>{part}</>
+            ))}
+          </h1>
+          <p class="hero-sub">{hero.subhead}</p>
+          <div class="hero-ctas">
+            <a href={hero.cta.primary.href} class="btn btn-primary" id="hero-cta-products">
+              {hero.cta.primary.label} →
+            </a>
+            <a href={hero.cta.secondary.href} download class="btn btn-ghost" id="hero-cta-resume">
+              ⬇ {hero.cta.secondary.label}
+            </a>
+            <a href={hero.cta.tertiary.href} target="_blank" rel="noopener" class="btn btn-ghost" id="hero-cta-call">
+              📅 {hero.cta.tertiary.label}
+            </a>
+          </div>
+        </div>
+
+        <!-- Right card -->
+        <div class="profile-card reveal" style="--delay:0ms">
+          <div class="profile-avatar">KA</div>
+          <div class="profile-name">{person.name}</div>
+          <div class="profile-role">{person.title} · {person.company}</div>
+          <hr class="profile-divider" />
+          <ul class="bullet-list">
+            <li><span class="bullet-check">✓</span> {person.teamSize}-person cross-functional squad (engineers + PMs)</li>
+            <li><span class="bullet-check">✓</span> {person.yearsExperience} years in data engineering, AI, and product leadership</li>
+            <li><span class="bullet-check">✓</span> 0-to-1 builder: {products.length} enterprise products shipped</li>
+            <li><span class="bullet-check">✓</span> Real-time CDP serving 100M+ customer profiles</li>
+            <li><span class="bullet-check">✓</span> FE FuTech 2024 — Best Data Analytics Solution</li>
+          </ul>
+          <hr class="profile-divider" />
+          <div style="display:flex; gap:12px; flex-wrap:wrap;">
+            <a href={person.linkedin} target="_blank" rel="noopener" class="btn btn-ghost btn-sm" id="profile-linkedin">LinkedIn ↗</a>
+            <a href={person.github} target="_blank" rel="noopener" class="btn btn-ghost btn-sm" id="profile-github">GitHub ↗</a>
+            <a href={person.blog} target="_blank" rel="noopener" class="btn btn-ghost btn-sm" id="profile-blog">Blog ↗</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── STATS BAND ──────────────────────────────────────────────── -->
+    <section class="stats-band" id="stats" aria-label="Key metrics">
+      <div class="container">
+        <div class="stats-grid reveal-stagger">
+          {stats.map((s) => {
+            const numStr = s.value.replace(/[^0-9.]/g, '');
+            const suffix = s.value.replace(/[0-9.]/g, '');
+            return (
+              <div class="stat-cell">
+                <div
+                  class="stat-value"
+                  data-target={numStr + suffix}
+                  aria-label={s.value}
+                >{s.value}</div>
+                <div class="stat-label">{s.label}</div>
+                <div class="stat-detail">{s.detail}</div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+
+    <!-- ── PRODUCTS BENTO ──────────────────────────────────────────── -->
+    <section class="products-section container" id="products" aria-labelledby="products-title">
+      <p class="section-tag">Products & Case Studies</p>
+      <h2 class="section-title" id="products-title">{products.length} enterprise products. Built from 0.</h2>
+      <p class="section-desc">
+        Every product below is in production, serving enterprise brands at scale. Architecture decisions, 
+        outcomes, and stack are documented — not just named.
+      </p>
+
+      <div class="bento-grid reveal">
+        {products.map((p) => (
+          <article class="bento-card" data-size={p.size} id={`product-${p.id}`} aria-label={p.name}>
+            <div class="bento-card-glow"></div>
+            <p class="card-category">{p.category}</p>
+            <h3 class="card-name">{p.name}</h3>
+            {(p.size === 'large' || p.size === 'medium') && (
+              <p class="card-problem"><strong style="color:var(--text-2); font-weight:600;">Problem:</strong> {p.problem}</p>
+            )}
+            {(p.size === 'large' || p.size === 'medium') && (
+              <p class="card-built"><strong style="color:var(--text-2); font-weight:600;">Built:</strong> {p.built}</p>
+            )}
+            <div class="card-outcome">↑ {p.outcome}</div>
+            <div class="stack-pills">
+              {p.stack.map(tech => <span class="stack-pill">{tech}</span>)}
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <!-- ── CLIENTS ─────────────────────────────────────────────────── -->
+    <section class="clients-section container" id="clients" aria-label="Client brands">
+      <p class="section-tag">Clients Served</p>
+      <div class="clients-strip reveal-stagger" style="margin-top:16px;">
+        {clients.map(c => (
+          <span class="client-chip">{c.name}</span>
+        ))}
+        <span class="client-chip" style="color:var(--text-3)">+ {person.clientCount - clients.length} more enterprise brands</span>
+      </div>
+    </section>
+
+    <!-- ── SKILLS MATRIX ───────────────────────────────────────────── -->
+    <section class="skills-section container" id="skills" aria-labelledby="skills-title">
+      <p class="section-tag">Technical Stack</p>
+      <h2 class="section-title" id="skills-title">Built on battle-tested infrastructure.</h2>
+      <p class="section-desc">
+        Not a generalist. Every tool below has shipped to production in an enterprise context.
+      </p>
+      <div class="skills-grid reveal-stagger">
+        {skills.map(sg => (
+          <div class="skill-group" id={`skill-${sg.area.toLowerCase().replace(/\s+/g,'-')}`}>
+            <div class="skill-group-title">{sg.area}</div>
+            <div class="skill-tags">
+              {sg.items.map(item => <span class="skill-tag">{item}</span>)}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- ── CAREER TIMELINE ─────────────────────────────────────────── -->
+    <section class="timeline-section container" id="experience" aria-labelledby="exp-title">
+      <p class="section-tag">Career</p>
+      <h2 class="section-title" id="exp-title">{person.yearsExperience} years. One clear direction.</h2>
+      <p class="section-desc">
+        Data analyst → architect → AVP. Every step deeper into the stack.
+      </p>
+      <div class="timeline reveal">
+        {experience.map(exp => (
+          <div class="tl-item">
+            <div class="tl-dot"></div>
+            <p class="tl-date">{exp.period} · {exp.location}</p>
+            <p class="tl-role">{exp.role}</p>
+            <p class="tl-org">{exp.org}</p>
+            <ul class="tl-bullets">
+              {exp.highlights.map(h => <li>{h}</li>)}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- ── EDUCATION ───────────────────────────────────────────────── -->
+    <section class="edu-section container" id="education" aria-labelledby="edu-title">
+      <p class="section-tag">Education</p>
+      <h2 class="section-title" id="edu-title">Formal foundation.</h2>
+      <div class="edu-grid reveal-stagger">
+        {education.map(ed => (
+          <div class="edu-card">
+            <p class="edu-degree">{ed.degree}</p>
+            <p class="edu-inst">{ed.institution}</p>
+            <p class="edu-period">{ed.period}</p>
+            <p class="edu-detail">{ed.detail}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- ── FAQ / AEO ───────────────────────────────────────────────── -->
+    <section class="faq-section container" id="faq" aria-labelledby="faq-title">
+      <p class="section-tag">AEO — Answer Engine Optimization</p>
+      <h2 class="section-title" id="faq-title">Questions AI assistants get asked about Kumar.</h2>
+      <p class="section-desc">
+        These answers are structured so that ChatGPT, Perplexity, and Gemini can cite this page directly.
+      </p>
+      <div class="faq-list reveal">
+        {faq.map((item, i) => (
+          <details class="faq-item" id={`faq-${i}`}>
+            <summary class="faq-q">
+              {item.q}
+              <span class="faq-icon">+</span>
+            </summary>
+            <p class="faq-a">{item.a}</p>
+          </details>
+        ))}
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ── FOOTER ─────────────────────────────────────────────────── -->
+  <footer id="contact" aria-label="Contact and footer">
+    <div class="footer-inner">
+      <div class="footer-links">
+        <a href={`mailto:${person.email}`} id="footer-email">✉ {person.email}</a>
+        <a href={`tel:${person.phone}`} id="footer-phone">{person.phone}</a>
+        <a href={person.linkedin} target="_blank" rel="noopener" id="footer-linkedin">LinkedIn ↗</a>
+        <a href={person.github} target="_blank" rel="noopener" id="footer-github">GitHub ↗</a>
+        <a href={person.blog} target="_blank" rel="noopener" id="footer-blog">Blog ↗</a>
+        <a href={person.calendly} target="_blank" rel="noopener" class="btn btn-primary btn-sm" id="footer-cta">Book a Call</a>
+      </div>
+      <p class="footer-copy">© {new Date().getFullYear()} {person.name} · {person.title} · {person.company}</p>
+    </div>
+  </footer>
+
+</Layout>

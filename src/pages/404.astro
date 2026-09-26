@@ -1,0 +1,27 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { person } from '../data/content';
+---
+
+<Layout title={`Page not found | ${person.name}`}>
+  <main class="container not-found">
+    <p class="section-tag">404</p>
+    <h1 class="section-title">This page doesn't exist.</h1>
+    <p class="section-desc">The link may be broken or the page may have moved.</p>
+    <div class="hero-ctas">
+      <a href="/" class="btn btn-primary">Back to home →</a>
+      <a href="/#products" class="btn btn-ghost">View case studies</a>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  .not-found {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+  }
+</style>
