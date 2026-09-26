@@ -53,7 +53,7 @@ const faqSchema = {
         <!-- Left copy -->
         <div>
           <div class="award-tag">
-            🏆 {person.award}
+            {person.award}
           </div>
           <h1 class="hero-headline">
             {hero.headline.split('100M+').map((part, i) => (
@@ -68,10 +68,10 @@ const faqSchema = {
               {hero.cta.primary.label} →
             </a>
             <a href={hero.cta.secondary.href} download class="btn btn-ghost" id="hero-cta-resume">
-              ⬇ {hero.cta.secondary.label}
+              ↓ {hero.cta.secondary.label}
             </a>
             <a href={hero.cta.tertiary.href} target="_blank" rel="noopener" class="btn btn-ghost" id="hero-cta-call">
-              📅 {hero.cta.tertiary.label}
+              {hero.cta.tertiary.label}
             </a>
           </div>
         </div>
@@ -134,14 +134,13 @@ const faqSchema = {
       <div class="bento-grid reveal">
         {products.map((p) => (
           <article class="bento-card" data-size={p.size} id={`product-${p.id}`} aria-label={p.name}>
-            <div class="bento-card-glow"></div>
             <p class="card-category">{p.category}</p>
             <h3 class="card-name">{p.name}</h3>
             {(p.size === 'large' || p.size === 'medium') && (
-              <p class="card-problem"><strong style="color:var(--text-2); font-weight:600;">Problem:</strong> {p.problem}</p>
+              <p class="card-problem"><strong style="color:var(--ink); font-weight:600;">Problem:</strong> {p.problem}</p>
             )}
             {(p.size === 'large' || p.size === 'medium') && (
-              <p class="card-built"><strong style="color:var(--text-2); font-weight:600;">Built:</strong> {p.built}</p>
+              <p class="card-built"><strong style="color:var(--ink); font-weight:600;">Built:</strong> {p.built}</p>
             )}
             <div class="card-outcome">↑ {p.outcome}</div>
             <div class="stack-pills">
@@ -159,7 +158,7 @@ const faqSchema = {
         {clients.map(c => (
           <span class="client-chip">{c.name}</span>
         ))}
-        <span class="client-chip" style="color:var(--text-3)">+ {person.clientCount - clients.length} more enterprise brands</span>
+        <span class="client-chip">+ {person.clientCount - clients.length} more enterprise brands</span>
       </div>
     </section>
 
@@ -246,7 +245,7 @@ const faqSchema = {
   <footer id="contact" aria-label="Contact and footer">
     <div class="footer-inner">
       <div class="footer-links">
-        <a href={`mailto:${person.email}`} id="footer-email">✉ {person.email}</a>
+        <a href={`mailto:${person.email}`} id="footer-email">{person.email}</a>
         <a href={`tel:${person.phone}`} id="footer-phone">{person.phone}</a>
         <a href={person.linkedin} target="_blank" rel="noopener" id="footer-linkedin">LinkedIn ↗</a>
         <a href={person.github} target="_blank" rel="noopener" id="footer-github">GitHub ↗</a>
