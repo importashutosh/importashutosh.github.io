@@ -1,0 +1,18 @@
+---
+import { person } from '../data/content';
+
+interface Props {
+  source?: string;
+}
+const { source = 'default' } = Astro.props;
+---
+
+<!-- Cycle 4 swaps this fallback for the newsletter form (siteConfig.newsletter). -->
+<aside class="subscribe" aria-label="Follow along" data-source={source}>
+  <p class="subscribe-text">
+    <strong>Follow along:</strong>
+    <a class="text-link" href="/rss.xml">RSS feed</a>
+    <span aria-hidden="true">·</span>
+    <a class="text-link" href={person.linkedin} target="_blank" rel="noopener">LinkedIn ↗</a>
+  </p>
+</aside>

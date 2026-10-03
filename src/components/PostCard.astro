@@ -1,0 +1,34 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { readingMinutes, tagSlug } from '../lib/posts';
+
+interface Props {
+  post: CollectionEntry<'blog'>;
+}
+const { post } = Astro.props;
+const { title, description, date, tags, level } = post.data;
+const minutes = readingMinutes(post.body ?? '');
+const href = `/writing/${post.id}/`;
+const seen = new Set<string>();
+const chips = tags
+  .map((t) => ({ label: t.trim(), slug: tagSlug(t) }))
+  .filter((c) => c.slug && !seen.has(c.slug) && seen.add(c.slug));
+---
+
+<article class="post-card">
+  <h2 class="post-card-title"><a href={href}>{title}</a></h2>
+  <p class="post-card-desc">{description}</p>
+  <p class="post-card-meta">
+    <time datetime={date.toISOString()}>
+      {date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' })}
+    </time>
+    <span aria-hidden="true">·</span>
+    <span>{minutes} min read</span>
+    {level && <span class="level-badge">{level}</span>}
+  </p>
+  <ul class="tag-list" aria-label="Tags">
+    {chips.map((c) => (
+      <li><a class="tag-chip" href={`/writing/tags/${c.slug}/`}>{c.label}</a></li>
+    ))}
+  </ul>
+</article>
