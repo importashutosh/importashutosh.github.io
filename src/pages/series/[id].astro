@@ -1,0 +1,60 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Nav from '../../components/Nav.astro';
+import Footer from '../../components/Footer.astro';
+import Subscribe from '../../components/Subscribe.astro';
+import { getPublishedPosts } from '../../lib/collection';
+import { readingMinutes, seriesPosts } from '../../lib/posts';
+import { series } from '../../data/series';
+
+export async function getStaticPaths() {
+  const posts = await getPublishedPosts();
+  return Object.values(series).map((info) => ({
+    params: { id: info.id },
+    props: { info, posts: seriesPosts(posts, info.id) },
+  }));
+}
+
+const { info, posts } = Astro.props;
+const topics = [...info.topics]
+  .sort((a, b) => a.order - b.order)
+  .map((topic) => {
+    const post = posts.find((p) => p.data.seriesOrder === topic.order);
+    return { ...topic, post, minutes: post ? readingMinutes(post.body ?? '') : 0 };
+  });
+const publishedCount = topics.filter((t) => t.post).length;
+---
+
+<Layout title={`${info.title} series | Kumar Ashutosh`} description={info.description}>
+  <Nav current="writing" />
+  <main class="container blog-index">
+    <p class="section-tag"><a href="/writing/">Writing</a> / Series</p>
+    <h1 class="section-title">{info.title}</h1>
+    <p class="series-hub-desc">{info.description}</p>
+    <p class="series-hub-progress">{publishedCount} of {topics.length} topics published</p>
+    <ol class="series-topics">
+      {topics.map((t) =>
+        t.post ? (
+          <li class="series-topic">
+            <span class="series-topic-num" aria-hidden="true">{t.order}</span>
+            <a class="series-topic-link" href={`/writing/${t.post.id}/`}>
+              <span class="series-topic-title">{t.post.data.title}</span>
+              <span class="series-topic-meta">{t.minutes} min read</span>
+            </a>
+          </li>
+        ) : (
+          <li class="series-topic series-topic-soon">
+            <span class="series-topic-num" aria-hidden="true">{t.order}</span>
+            <span class="series-topic-link">
+              <span class="series-topic-title">{t.title}</span>
+              <span class="series-topic-meta">Coming soon</span>
+            </span>
+          </li>
+        ),
+      )}
+    </ol>
+    <p><a class="text-link" href="/writing/">← All posts</a></p>
+    <Subscribe source="series-hub" />
+  </main>
+  <Footer />
+</Layout>

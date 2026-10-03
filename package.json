@@ -11,7 +11,8 @@
     "preview": "astro preview",
     "astro": "astro",
     "test": "vitest run",
-    "check": "node scripts/check-dist.mjs"
+    "new-post": "node scripts/new-post.mjs",
+    "check":"node scripts/check-dist.mjs"
   },
   "dependencies": {
     "@astrojs/markdown-remark": "^7.3.1",
