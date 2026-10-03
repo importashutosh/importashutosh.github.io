@@ -3,7 +3,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 // @ts-expect-error plain .mjs module
-import { checkDist } from './check-dist.mjs';
+import { checkDist, readDraftSlugs, main } from './check-dist.mjs';
 
 const opts = {
   allowedHosts: ['plausible.io'],
@@ -82,5 +82,71 @@ describe('checkDist', () => {
   it('flags an rss.xml that does not parse', () => {
     write('rss.xml', '<rss><channel><title>x</channel>');
     expect(checkDist(dir, opts).some((m: string) => m.includes('rss.xml'))).toBe(true);
+  });
+});
+
+describe('checkDist: sitemap/rss requirement and slug matching', () => {
+  const full = (d: string) => {
+    for (const f of ['sitemap-0.xml', 'sitemap-index.xml', 'sitemap.xml']) {
+      writeFileSync(join(d, f), '<urlset></urlset>');
+    }
+    writeFileSync(join(d, 'rss.xml'), '<rss version="2.0"><channel><title>x</title></channel></rss>');
+  };
+
+  it('missing sitemap/rss files are violations when requireSitemapAndRss is true', () => {
+    const v = checkDist(dir, { ...opts, requireSitemapAndRss: true });
+    for (const f of ['sitemap-0.xml', 'sitemap-index.xml', 'sitemap.xml', 'rss.xml']) {
+      expect(v.some((m: string) => m.startsWith(f) && m.includes('missing'))).toBe(true);
+    }
+  });
+
+  it('passes when all required files exist', () => {
+    full(dir);
+    expect(checkDist(dir, { ...opts, requireSitemapAndRss: true })).toEqual([]);
+  });
+
+  it('is fixture-friendly when the option is off (default)', () => {
+    expect(checkDist(dir, opts)).toEqual([]);
+  });
+
+  it('draft slug "foo" does not match published "foo-bar" in the sitemap', () => {
+    writeFileSync(join(dir, 'sitemap-0.xml'), '<urlset><url><loc>https://x.test/writing/foo-bar/</loc></url></urlset>');
+    expect(checkDist(dir, { ...opts, draftSlugs: ['foo'] })).toEqual([]);
+    writeFileSync(join(dir, 'sitemap-0.xml'), '<urlset><url><loc>https://x.test/writing/foo/</loc></url></urlset>');
+    expect(checkDist(dir, { ...opts, draftSlugs: ['foo'] }).length).toBe(1);
+  });
+});
+
+describe('readDraftSlugs and main (CLI code path)', () => {
+  const post = (draft: string) => `---\ntitle: "t"\ndate: 2026-01-01\ndraft: ${draft}\n---\n\nbody\n`;
+  let src: string;
+  beforeEach(() => {
+    src = join(dir, 'src-blog');
+    mkdirSync(join(src, 'series', 'deep'), { recursive: true });
+    writeFileSync(join(src, 'plain.mdx'), post('true'));
+    writeFileSync(join(src, 'commented.md'), post('true # wip'));
+    writeFileSync(join(src, 'published.mdx'), post('false'));
+    writeFileSync(join(src, 'quoted.mdx'), post('"true"'));
+    writeFileSync(join(src, '_template.mdx'), post('true'));
+    writeFileSync(join(src, 'series', 'nested.mdx'), post('true'));
+    writeFileSync(join(src, 'series', 'deep', 'deeper.mdx'), post('true'));
+    mkdirSync(join(src, '_private'));
+    writeFileSync(join(src, '_private', 'x.mdx'), post('true'));
+  });
+
+  it('finds boolean drafts recursively, keyed by collection id', () => {
+    expect(readDraftSlugs(src).sort()).toEqual(['commented', 'plain', 'series/deeper'.replace('series/', 'series/deep/'), 'series/nested'].sort());
+  });
+
+  it('ignores draft: false, quoted "true" (not a boolean), and _-prefixed files/dirs', () => {
+    const s = readDraftSlugs(src);
+    for (const n of ['published', 'quoted', '_template', '_private/x']) expect(s).not.toContain(n);
+  });
+
+  it('main() flags a built nested draft and missing sitemap/rss', () => {
+    write('writing/series/nested/index.html', page('<h1>N</h1>'));
+    const v = main(dir, src);
+    expect(v.some((m: string) => m.includes('series/nested'))).toBe(true);
+    expect(v.some((m: string) => m.startsWith('rss.xml') && m.includes('missing'))).toBe(true);
   });
 });

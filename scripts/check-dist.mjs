@@ -30,7 +30,7 @@ function attr(tag, name) {
 }
 
 export function checkDist(distDir, opts) {
-  const { allowedHosts, forbidden, draftSlugs } = opts;
+  const { allowedHosts, forbidden, draftSlugs, requireSitemapAndRss = false } = opts;
   const violations = [];
   const files = walk(distDir);
   const rel = (f) => relative(distDir, f).split('\\').join('/');
@@ -77,13 +77,19 @@ export function checkDist(distDir, opts) {
     }
   }
 
+  if (requireSitemapAndRss) {
+    for (const f of ['sitemap-0.xml', 'sitemap-index.xml', 'sitemap.xml', 'rss.xml']) {
+      if (!existsSync(join(distDir, f))) violations.push(`${f}: missing from dist`);
+    }
+  }
+
   // (4) sitemap-0.xml
   const sitemap = join(distDir, 'sitemap-0.xml');
   if (existsSync(sitemap)) {
     const xml = readFileSync(sitemap, 'utf8');
     if (xml.includes('/writing/tags/')) violations.push('sitemap-0.xml: contains /writing/tags/ URL');
     for (const slug of draftSlugs) {
-      if (xml.includes(`/writing/${slug}`)) violations.push(`sitemap-0.xml: contains draft slug ${slug}`);
+      if (xml.includes(`/writing/${slug}/`)) violations.push(`sitemap-0.xml: contains draft slug ${slug}`);
     }
   }
 
@@ -107,16 +113,36 @@ export function checkDist(distDir, opts) {
 }
 
 // Frontmatter scan for draft posts; avoids needing Astro in the CLI.
-export function readDraftSlugs(blogDir) {
+// Mirrors the collection glob (`**/[^_]*.{md,mdx}`): recurses, skips names starting with `_`,
+// and keys each slug on the collection id (path relative to blogDir, no extension, forward slashes).
+// Only a boolean `draft: true` (optionally followed by a `# comment`) counts; the quoted string "true" does not.
+export function readDraftSlugs(blogDir, base = blogDir) {
   if (!existsSync(blogDir)) return [];
   const slugs = [];
   for (const name of readdirSync(blogDir)) {
-    if (name.startsWith('_') || !/\.(mdx?|markdown)$/i.test(name)) continue;
-    const text = readFileSync(join(blogDir, name), 'utf8');
-    const fm = /^---\r?\n([\s\S]*?)\r?\n---/.exec(text);
-    if (fm && /^draft:\s*true\s*$/m.test(fm[1])) slugs.push(name.replace(/\.(mdx?|markdown)$/i, ''));
+    if (name.startsWith('_')) continue;
+    const p = join(blogDir, name);
+    if (statSync(p).isDirectory()) {
+      slugs.push(...readDraftSlugs(p, base));
+      continue;
+    }
+    if (!/\.(mdx?)$/i.test(name)) continue;
+    const fm = /^---\r?\n([\s\S]*?)\r?\n---/.exec(readFileSync(p, 'utf8'));
+    if (fm && /^draft:[ \t]*true[ \t]*(#.*)?$/m.test(fm[1])) {
+      slugs.push(relative(base, p).split('\\').join('/').replace(/\.mdx?$/i, ''));
+    }
   }
   return slugs;
+}
+
+// Same code path as the CLI: scan drafts in srcBlogDir, then check distDir.
+export function main(distDir, srcBlogDir) {
+  return checkDist(distDir, {
+    allowedHosts: ['plausible.io'],
+    forbidden: ['tel:', 'mailto:', '8375855754', 'ashutosh.jha3006', 'bit.ly'],
+    draftSlugs: readDraftSlugs(srcBlogDir),
+    requireSitemapAndRss: true,
+  });
 }
 
 const isCli = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
@@ -127,11 +153,7 @@ if (isCli) {
     console.error('check: dist/ not found. Run `npm run build` first.');
     process.exit(1);
   }
-  const violations = checkDist(distDir, {
-    allowedHosts: ['plausible.io'],
-    forbidden: ['tel:', 'mailto:', '8375855754', 'ashutosh.jha3006', 'bit.ly'],
-    draftSlugs: readDraftSlugs(join(root, 'src', 'content', 'blog')),
-  });
+  const violations = main(distDir, join(root, 'src', 'content', 'blog'));
   if (violations.length) {
     console.error(`check: ${violations.length} violation(s)`);
     for (const v of violations) console.error(`  - ${v}`);
