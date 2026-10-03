@@ -1,7 +1,8 @@
 ---
 import { person } from '../data/content';
 
-const builtOn = new Date().toISOString().slice(0, 10);
+const now = new Date();
+const builtOn = now.toISOString().slice(0, 10);
 ---
 
 <footer aria-label="Footer">
@@ -13,14 +14,14 @@ const builtOn = new Date().toISOString().slice(0, 10);
       <a href={person.calendly} target="_blank" rel="noopener" class="btn btn-primary btn-sm" id="footer-cta">Book a Call</a>
     </div>
     <div class="footer-meta">
-      <p class="footer-legal">
+      <nav class="footer-legal" aria-label="Legal">
         <a href="/privacy/">Privacy</a>
         <a href="/cookies/">Cookies</a>
         <a href="/disclaimer/">Disclaimer</a>
-      </p>
+      </nav>
       <p class="footer-copy">Views expressed here are my own and do not represent my employer.</p>
       <p class="footer-copy">Last updated {builtOn}</p>
-      <p class="footer-copy">© {new Date().getFullYear()} {person.name} · {person.title} · {person.company}</p>
+      <p class="footer-copy">© {now.getFullYear()} {person.name} · {person.title} · {person.company}</p>
     </div>
   </div>
 </footer>

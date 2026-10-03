@@ -491,8 +491,11 @@ footer {
 .footer-links a:hover { color: var(--ink); }
 .footer-copy { font-size: var(--fs-2xs); color: var(--ink-muted); }
 .footer-meta { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; text-align: right; }
-.footer-legal { display: flex; flex-wrap: wrap; gap: 18px; justify-content: flex-end; }
+.footer-legal { display: flex; flex-wrap: wrap; gap: 18px; justify-content: flex-end; margin: -8px 0;
+  position: static; z-index: auto; background: none; border-bottom: 0;
+}
 .footer-legal a {
+  display: inline-flex; align-items: center; min-height: 44px;
   font-size: var(--fs-2xs); color: var(--ink-muted); text-decoration: none;
   transition: color 0.18s var(--ease);
 }
