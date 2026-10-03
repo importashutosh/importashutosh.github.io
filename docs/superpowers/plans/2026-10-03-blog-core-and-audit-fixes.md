@@ -223,7 +223,7 @@
 - [ ] **Step 3: Sections.** Insert `LatestWriting` after the FAQ-preceding sections (before `#faq`) and a `Subscribe` panel after `#faq`, before the footer.
 - [ ] **Step 4: JSON-LD.** Put the `Person` schema (no email, no telephone, `sameAs` = LinkedIn + GitHub only) and a `WebSite` schema in the `head` slot of `index.astro`.
 - [ ] **Step 5: `llms.txt`:** remove the Email line and the bit.ly Blog line; add `Writing: https://importashutosh.github.io/writing/`. Leave all other lines untouched.
-- [ ] **Step 6: Verify.** `npm run build`; with no published posts `dist/index.html` has no "Latest writing" markup; with one throwaway published post it shows that post; grep `dist/` for `8375855754`, `ashutosh.jha3006`, `bit.ly`, `tel:`, `mailto:` → no matches (delete the throwaway post afterwards). Visual check at 1280px and 375px.
+- [ ] **Step 6: Verify.** `npm run build`; with no published posts `dist/index.html` has no "Latest writing" markup; with one throwaway published post it shows that post; run `npm run check` (it detects the owner's phone number and email local-part generically, plus `bit.ly`, `tel:`, `mailto:`) → no violations (delete the throwaway post afterwards). Visual check at 1280px and 375px.
 - [ ] **Step 7: Commit** `feat: home page CTA hierarchy, latest writing strip, JSON-LD, privacy cleanup`.
 
 ---
@@ -266,7 +266,7 @@
 - Modify: `.github/workflows/deploy.yml` (ensure `npm test` and `npm run check` run before upload)
 
 **Interfaces:**
-- Produces in `scripts/check-dist.mjs` (exports `checkDist(distDir: string, opts: { allowedHosts: string[]; forbidden: string[]; draftSlugs: string[] }): string[]` returning a list of violations; CLI exits 1 when non-empty): rules — (1) no forbidden string (`tel:`, `mailto:`, `8375855754`, `ashutosh.jha3006`, `bit.ly`) in any `.html`, `.txt`, `.xml` file; (2) every `src`/`href` pointing at an external host on `<script>` or `<link rel=stylesheet|preconnect>` tags is in `allowedHosts` (default `['plausible.io']`); (3) no `dist/writing/<draftSlug>/` directory; (4) `sitemap-0.xml` contains no `/writing/tags/` URL and no draft slug; (5) `rss.xml` parses with `fast-xml-parser`; (6) every `.html` page except `404.html` has exactly one `<h1>`.
+- Produces in `scripts/check-dist.mjs` (exports `checkDist(distDir: string, opts: { allowedHosts: string[]; forbidden: string[]; draftSlugs: string[] }): string[]` returning a list of violations; CLI exits 1 when non-empty): rules — (1) no forbidden string (`tel:`, `mailto:`, `@gmail.com`, `bit.ly`, plus a generic Indian-mobile-number pattern, so the owner's phone number and email local-part are never written into the repo) in any `.html`, `.txt`, `.xml` file; (2) every `src`/`href` pointing at an external host on `<script>` or `<link rel=stylesheet|preconnect>` tags is in `allowedHosts` (default `['plausible.io']`); (3) no `dist/writing/<draftSlug>/` directory; (4) `sitemap-0.xml` contains no `/writing/tags/` URL and no draft slug; (5) `rss.xml` parses with `fast-xml-parser`; (6) every `.html` page except `404.html` has exactly one `<h1>`.
 
 - [ ] **Step 1: Write failing tests** in `check-dist.test.ts` using a temp directory fixture: a page containing `mailto:` yields a violation; a script from `evil.example` yields a violation while `plausible.io` does not; a page with two `<h1>` yields a violation; a clean fixture yields `[]`.
 - [ ] **Step 2:** Run → FAIL. **Step 3:** implement. **Step 4:** Run → PASS.

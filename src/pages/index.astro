@@ -6,6 +6,7 @@ import LatestWriting from '../components/LatestWriting.astro';
 import Subscribe from '../components/Subscribe.astro';
 import { getPublishedPosts } from '../lib/collection';
 import { absoluteUrl } from '../lib/url';
+import { safeJsonLd } from '../lib/jsonld';
 import {
   person, hero, stats, products, clients, skills,
   experience, education, faq
@@ -60,11 +61,11 @@ const personSchema = {
 ---
 
 <Layout>
-  <script slot="head" type="application/ld+json" set:html={JSON.stringify(personSchema)} />
-  <script slot="head" type="application/ld+json" set:html={JSON.stringify(webSiteSchema)} />
+  <script slot="head" type="application/ld+json" set:html={safeJsonLd(personSchema)} />
+  <script slot="head" type="application/ld+json" set:html={safeJsonLd(webSiteSchema)} />
 
   <!-- FAQ schema injected in page body for AEO -->
-  <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+  <script type="application/ld+json" set:html={safeJsonLd(faqSchema)} />
 
   <!-- ── NAV ──────────────────────────────────────────────────────── -->
   <Nav current="home" />

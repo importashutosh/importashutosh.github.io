@@ -29,8 +29,19 @@ function attr(tag, name) {
   return m ? (m[1] ?? m[2] ?? m[3]) : null;
 }
 
+// Personal data must never ship in the built site. Detected generically so no personal literal lives in the repo.
+export const FORBIDDEN_STRINGS = ['tel:', 'mailto:', '@gmail.com', 'bit.ly'];
+export const FORBIDDEN_PATTERNS = [
+  {
+    // Indian mobile number: optional +91, then 10 digits starting 6-9 (optionally split 5+5).
+    // Lookarounds keep it off hashes, ids and longer numbers.
+    name: 'Indian mobile number',
+    regex: /(?<![\w.+-])(?:\+?91[\s-]?)?[6-9]\d{4}[\s-]?\d{5}(?![\w-])/,
+  },
+];
+
 export function checkDist(distDir, opts) {
-  const { allowedHosts, forbidden, draftSlugs, requireSitemapAndRss = false } = opts;
+  const { allowedHosts, forbidden, forbiddenPatterns = [], draftSlugs, requireSitemapAndRss = false } = opts;
   const violations = [];
   const files = walk(distDir);
   const rel = (f) => relative(distDir, f).split('\\').join('/');
@@ -43,6 +54,9 @@ export function checkDist(distDir, opts) {
     // (1) forbidden strings
     for (const s of forbidden) {
       if (text.includes(s)) violations.push(`${rel(f)}: contains forbidden string "${s}"`);
+    }
+    for (const { name, regex } of forbiddenPatterns) {
+      if (regex.test(text)) violations.push(`${rel(f)}: matches forbidden pattern (${name})`);
     }
 
     if (ext !== '.html') continue;
@@ -139,7 +153,8 @@ export function readDraftSlugs(blogDir, base = blogDir) {
 export function main(distDir, srcBlogDir) {
   return checkDist(distDir, {
     allowedHosts: ['plausible.io'],
-    forbidden: ['tel:', 'mailto:', '8375855754', 'ashutosh.jha3006', 'bit.ly'],
+    forbidden: FORBIDDEN_STRINGS,
+    forbiddenPatterns: FORBIDDEN_PATTERNS,
     draftSlugs: readDraftSlugs(srcBlogDir),
     requireSitemapAndRss: true,
   });

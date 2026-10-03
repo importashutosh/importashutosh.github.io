@@ -9,6 +9,7 @@ import interLatin from '@fontsource-variable/inter/files/inter-latin-wght-normal
 import plex600Latin from '@fontsource/ibm-plex-serif/files/ibm-plex-serif-latin-600-normal.woff2?url';
 import { person } from '../data/content';
 import { absoluteUrl } from '../lib/url';
+import siteConfig from '../../site.config';
 
 interface Props {
   title?: string;
@@ -39,7 +40,7 @@ const canonical = canonicalUrl ?? absoluteUrl(canonicalPath ?? Astro.url.pathnam
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{title}</title>
   <meta name="description" content={description} />
-  <link rel="canonical" href={canonical} />
+  {!noindex && <link rel="canonical" href={canonical} />}
   <link rel="preload" as="font" type="font/woff2" href={interLatin} crossorigin />
   <link rel="preload" as="font" type="font/woff2" href={plex600Latin} crossorigin />
   {noindex && <meta name="robots" content="noindex" />}
@@ -69,7 +70,7 @@ const canonical = canonicalUrl ?? absoluteUrl(canonicalPath ?? Astro.url.pathnam
   <slot name="head" />
 
   <!-- Plausible analytics (privacy-friendly) — register this domain at plausible.io -->
-  <script defer data-domain="importashutosh.github.io" src="https://plausible.io/js/script.js"></script>
+  <script defer data-domain={new URL(siteConfig.siteUrl).host} src="https://plausible.io/js/script.js"></script>
 </head>
 <body>
   <slot />

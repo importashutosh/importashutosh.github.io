@@ -3,11 +3,12 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 // @ts-expect-error plain .mjs module
-import { checkDist, readDraftSlugs, main } from './check-dist.mjs';
+import { checkDist, readDraftSlugs, main, FORBIDDEN_STRINGS, FORBIDDEN_PATTERNS } from './check-dist.mjs';
 
 const opts = {
   allowedHosts: ['plausible.io'],
-  forbidden: ['tel:', 'mailto:', '8375855754', 'ashutosh.jha3006', 'bit.ly'],
+  forbidden: FORBIDDEN_STRINGS,
+  forbiddenPatterns: FORBIDDEN_PATTERNS,
   draftSlugs: ['secret-draft'],
 };
 
@@ -148,5 +149,36 @@ describe('readDraftSlugs and main (CLI code path)', () => {
     const v = main(dir, src);
     expect(v.some((m: string) => m.includes('series/nested'))).toBe(true);
     expect(v.some((m: string) => m.startsWith('rss.xml') && m.includes('missing'))).toBe(true);
+  });
+});
+
+describe('personal-data detection without personal literals', () => {
+  const flagged = (body: string) => checkDist(dir, opts).filter((m: string) => m.includes('index.html') && /forbidden/.test(m));
+  it('flags Indian mobile-number shapes', () => {
+    for (const num of ['9876543210', '98765 43210', '98765-43210', '+91 98765 43210', '+919876543210', '91-98765-43210']) {
+      write('index.html', page(`<p>Call ${num} now</p>`));
+      expect(flagged(num).length, num).toBeGreaterThan(0);
+    }
+  });
+  it('flags @gmail.com, tel:, mailto: and bit.ly as plain strings', () => {
+    for (const s of ['someone@gmail.com', 'tel:+1', 'mailto:a@b.c', 'https://bit.ly/x']) {
+      write('index.html', page(`<p>${s}</p>`));
+      expect(flagged(s).length, s).toBeGreaterThan(0);
+    }
+  });
+  it('does not flag stats, ids or hex hashes', () => {
+    const benign = [
+      '1000000000',
+      '5000000000 requests',
+      '2026-10-03T00:30:00Z',
+      'sha256-a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d69876543210abcdef',
+      '/_astro/index.Cx9876543210.css',
+      'data-astro-cid-9876543210',
+      '17591234567890',
+    ];
+    for (const b of benign) {
+      write('index.html', page(`<p>${b}</p>`));
+      expect(flagged(b), b).toEqual([]);
+    }
   });
 });
