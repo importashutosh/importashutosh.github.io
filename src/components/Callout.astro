@@ -1,0 +1,34 @@
+---
+/**
+ * Callouts for MDX posts. Astro components cannot have named exports, so each variant is a
+ * thin wrapper component next to this file. In a post:
+ *
+ *   import Note from '../../components/Note.astro';
+ *   import Tradeoff from '../../components/Tradeoff.astro';
+ *   import FromTheField from '../../components/FromTheField.astro';
+ *   import WhenNotToUse from '../../components/WhenNotToUse.astro';
+ *   import Pitfall from '../../components/Pitfall.astro';
+ *
+ *   <Note title="Optional title">Body text, **markdown works**.</Note>
+ *
+ * Every callout carries a visible text label, so colour/border style is never the only cue.
+ */
+interface Props {
+  type: 'note' | 'tradeoff' | 'field' | 'avoid' | 'pitfall';
+  title?: string;
+}
+const { type, title } = Astro.props;
+const labels = {
+  note: 'Note',
+  tradeoff: 'Tradeoff',
+  field: 'From the field',
+  avoid: 'When not to use',
+  pitfall: 'Pitfall',
+} as const;
+const label = labels[type];
+---
+
+<div class:list={['callout', `callout-${type}`]} role="group" aria-label={title ? `${label}: ${title}` : label}>
+  <p class="callout-label">{label}{title && <span class="callout-title">: {title}</span>}</p>
+  <div class="callout-body"><slot /></div>
+</div>

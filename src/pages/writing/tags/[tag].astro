@@ -1,0 +1,37 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import Nav from '../../../components/Nav.astro';
+import Footer from '../../../components/Footer.astro';
+import PostCard from '../../../components/PostCard.astro';
+import Subscribe from '../../../components/Subscribe.astro';
+import { getPublishedPosts } from '../../../lib/collection';
+import { collectTags } from '../../../lib/posts';
+
+export async function getStaticPaths() {
+  const posts = await getPublishedPosts();
+  return collectTags(posts).map((t) => ({
+    params: { tag: t.slug },
+    props: { tag: t.tag, count: t.count, posts: t.posts },
+  }));
+}
+
+const { tag, count, posts } = Astro.props;
+---
+
+<Layout
+  title={`${tag} | Writing | Kumar Ashutosh`}
+  description={`Posts tagged ${tag}: ${count} ${count === 1 ? 'post' : 'posts'} on data engineering, system design and AI products.`}
+  noindex={count < 2}
+>
+  <Nav current="writing" />
+  <main class="container blog-index">
+    <p class="section-tag"><a href="/writing/">Writing</a> / Tag</p>
+    <h1 class="section-title">{tag}</h1>
+    <div class="post-list">
+      {posts.map((post) => <PostCard post={post} />)}
+    </div>
+    <p><a class="text-link" href="/writing/">← All posts</a></p>
+    <Subscribe source="tag-archive" />
+  </main>
+  <Footer />
+</Layout>

@@ -1,0 +1,21 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import PostCard from './PostCard.astro';
+import { relatedPosts } from '../lib/posts';
+
+interface Props {
+  post: CollectionEntry<'blog'>;
+  allPosts: CollectionEntry<'blog'>[];
+}
+const { post, allPosts } = Astro.props;
+const related = relatedPosts(post, allPosts, 3);
+---
+
+{related.length > 0 && (
+  <section class="related-posts" aria-labelledby="related-heading">
+    <h2 id="related-heading" class="related-heading">Related posts</h2>
+    <div class="related-list">
+      {related.map((p) => <PostCard post={p} headingLevel="h3" />)}
+    </div>
+  </section>
+)}

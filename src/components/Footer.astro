@@ -1,0 +1,28 @@
+---
+import { person } from '../data/content';
+
+const now = new Date();
+const builtOn = now.toISOString().slice(0, 10);
+---
+
+<footer aria-label="Footer">
+  <div class="footer-inner">
+    <div class="footer-links">
+      <a href="/about/" id="footer-about">About</a>
+      <a href="/contact/" id="footer-contact">Contact</a>
+      <a href={person.linkedin} target="_blank" rel="noopener" id="footer-linkedin">LinkedIn ↗</a>
+      <a href={person.github} target="_blank" rel="noopener" id="footer-github">GitHub ↗</a>
+      <a href={person.calendly} target="_blank" rel="noopener" class="btn btn-primary btn-sm" id="footer-cta">Book a Call</a>
+    </div>
+    <div class="footer-meta">
+      <nav class="footer-legal" aria-label="Legal">
+        <a href="/privacy/">Privacy</a>
+        <a href="/cookies/">Cookies</a>
+        <a href="/disclaimer/">Disclaimer</a>
+      </nav>
+      <p class="footer-copy">Views expressed here are my own and do not represent my employer.</p>
+      <p class="footer-copy">Last updated {builtOn}</p>
+      <p class="footer-copy">© {now.getFullYear()} {person.name} · {person.title} · {person.company}</p>
+    </div>
+  </div>
+</footer>

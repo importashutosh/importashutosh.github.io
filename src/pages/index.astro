@@ -1,5 +1,12 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import LatestWriting from '../components/LatestWriting.astro';
+import Subscribe from '../components/Subscribe.astro';
+import { getPublishedPosts } from '../lib/collection';
+import { absoluteUrl } from '../lib/url';
+import { safeJsonLd } from '../lib/jsonld';
 import {
   person, hero, stats, products, clients, skills,
   experience, education, faq
@@ -18,32 +25,50 @@ const faqSchema = {
     }
   }))
 };
+
+const latestPosts = (await getPublishedPosts()).slice(0, 3);
+
+const webSiteSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": person.name,
+  "url": absoluteUrl('/')
+};
+
+const personSchema = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": person.name,
+  "jobTitle": person.title,
+  "worksFor": {
+    "@type": "Organization",
+    "name": person.company
+  },
+  "url": absoluteUrl('/'),
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Gurugram",
+    "addressCountry": "IN"
+  },
+  "sameAs": [person.linkedin, person.github],
+  "award": person.award,
+  "knowsAbout": [
+    "Data Engineering", "Customer Data Platform", "GenAI", "LangGraph",
+    "Apache Kafka", "ClickHouse", "LLM", "Machine Learning", "Product Management",
+    "Agentic AI", "MCP Gateway", "Voice AI"
+  ]
+};
 ---
 
 <Layout>
+  <script slot="head" type="application/ld+json" set:html={safeJsonLd(personSchema)} />
+  <script slot="head" type="application/ld+json" set:html={safeJsonLd(webSiteSchema)} />
+
   <!-- FAQ schema injected in page body for AEO -->
-  <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+  <script type="application/ld+json" set:html={safeJsonLd(faqSchema)} />
 
   <!-- ── NAV ──────────────────────────────────────────────────────── -->
-  <nav>
-    <div class="nav-inner">
-      <a href="/" class="nav-logo" id="nav-logo">
-        <span class="logo-badge">KA</span>
-        Kumar Ashutosh
-      </a>
-      <button class="nav-mobile-toggle" id="nav-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links">
-        <span></span><span></span><span></span>
-      </button>
-      <ul class="nav-links" id="nav-links">
-        <li><a href="#products">Products</a></li>
-        <li><a href="#skills">Stack</a></li>
-        <li><a href="#experience">Career</a></li>
-        <li><a href="#faq">AEO / FAQ</a></li>
-        <li><a href={person.linkedin} target="_blank" rel="noopener">LinkedIn ↗</a></li>
-        <li><a href={person.calendly} target="_blank" rel="noopener" class="nav-cta">Book a Call</a></li>
-      </ul>
-    </div>
-  </nav>
+  <Nav current="home" />
 
   <main>
 
@@ -67,10 +92,10 @@ const faqSchema = {
             <a href={hero.cta.primary.href} class="btn btn-primary" id="hero-cta-products">
               {hero.cta.primary.label} →
             </a>
-            <a href={hero.cta.secondary.href} download class="btn btn-ghost" id="hero-cta-resume">
+            <a href={hero.cta.secondary.href} download class="text-link" id="hero-cta-resume">
               ↓ {hero.cta.secondary.label}
             </a>
-            <a href={hero.cta.tertiary.href} target="_blank" rel="noopener" class="btn btn-ghost" id="hero-cta-call">
+            <a href={hero.cta.tertiary.href} target="_blank" rel="noopener" class="text-link" id="hero-cta-call">
               {hero.cta.tertiary.label}
             </a>
           </div>
@@ -93,7 +118,7 @@ const faqSchema = {
           <div style="display:flex; gap:12px; flex-wrap:wrap;">
             <a href={person.linkedin} target="_blank" rel="noopener" class="btn btn-ghost btn-sm" id="profile-linkedin">LinkedIn ↗</a>
             <a href={person.github} target="_blank" rel="noopener" class="btn btn-ghost btn-sm" id="profile-github">GitHub ↗</a>
-            <a href={person.blog} target="_blank" rel="noopener" class="btn btn-ghost btn-sm" id="profile-blog">Blog ↗</a>
+            <a href="/writing/" class="btn btn-ghost btn-sm" id="profile-writing">Writing →</a>
           </div>
         </div>
       </div>
@@ -219,9 +244,12 @@ const faqSchema = {
       </div>
     </section>
 
+    <!-- ── LATEST WRITING (renders nothing when no published posts) ── -->
+    <LatestWriting posts={latestPosts} />
+
     <!-- ── FAQ / AEO ───────────────────────────────────────────────── -->
     <section class="faq-section container" id="faq" aria-labelledby="faq-title">
-      <p class="section-tag">AEO — Answer Engine Optimization</p>
+      <p class="section-tag">FAQ</p>
       <h2 class="section-title" id="faq-title">Questions AI assistants get asked about Kumar.</h2>
       <p class="section-desc">
         These answers are structured so that ChatGPT, Perplexity, and Gemini can cite this page directly.
@@ -239,21 +267,13 @@ const faqSchema = {
       </div>
     </section>
 
+    <div class="container">
+      <Subscribe source="home" />
+    </div>
+
   </main>
 
   <!-- ── FOOTER ─────────────────────────────────────────────────── -->
-  <footer id="contact" aria-label="Contact and footer">
-    <div class="footer-inner">
-      <div class="footer-links">
-        <a href={`mailto:${person.email}`} id="footer-email">{person.email}</a>
-        <a href={`tel:${person.phone}`} id="footer-phone">{person.phone}</a>
-        <a href={person.linkedin} target="_blank" rel="noopener" id="footer-linkedin">LinkedIn ↗</a>
-        <a href={person.github} target="_blank" rel="noopener" id="footer-github">GitHub ↗</a>
-        <a href={person.blog} target="_blank" rel="noopener" id="footer-blog">Blog ↗</a>
-        <a href={person.calendly} target="_blank" rel="noopener" class="btn btn-primary btn-sm" id="footer-cta">Book a Call</a>
-      </div>
-      <p class="footer-copy">© {new Date().getFullYear()} {person.name} · {person.title} · {person.company}</p>
-    </div>
-  </footer>
+  <Footer />
 
 </Layout>

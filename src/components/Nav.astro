@@ -1,0 +1,30 @@
+---
+import { person } from '../data/content';
+
+interface Props {
+  current?: 'home' | 'writing' | 'other';
+}
+const { current = 'other' } = Astro.props;
+const base = Astro.url.pathname === '/' ? '' : '/';
+---
+
+<nav>
+  <div class="nav-inner">
+    <a href="/" class="nav-logo" id="nav-logo">
+      <span class="logo-badge">KA</span>
+      Kumar Ashutosh
+    </a>
+    <button class="nav-mobile-toggle" id="nav-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links" id="nav-links">
+      <li><a href={`${base}#products`}>Products</a></li>
+      <li><a href={`${base}#skills`}>Stack</a></li>
+      <li><a href={`${base}#experience`}>Career</a></li>
+      <li><a href="/writing/" aria-current={current === 'writing' ? 'page' : undefined}>Writing</a></li>
+      <li><a href={`${base}#faq`}>FAQ</a></li>
+      <li><a href={person.linkedin} target="_blank" rel="noopener">LinkedIn ↗</a></li>
+      <li><a href={person.calendly} target="_blank" rel="noopener" class="nav-cta">Book a Call</a></li>
+    </ul>
+  </div>
+</nav>

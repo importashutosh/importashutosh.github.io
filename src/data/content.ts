@@ -12,15 +12,11 @@ export const person = {
   teamSize: 30, // SINGLE SOURCE — 30 engineers + PMs
   yearsExperience: 14,
   clientCount: 100, // "100+ enterprise clients"
-  email: "ashutosh.jha3006@gmail.com",
-  phone: "+91 8375855754",
   linkedin: "https://www.linkedin.com/in/shutupashu/",
   github: "https://github.com/importashutosh",
-  blog: "https://bit.ly/Dataphilosophy",
   resume: "/resume.pdf",
   calendly: "https://calendly.com/importashutosh/30min",
   award: "Financial Express FuTech Awards 2024 — Best Data Analytics Solution (Atlantis Platform)",
-  siteUrl: "https://importashutosh.github.io",
 };
 
 export const hero = {
@@ -318,6 +314,22 @@ export const faq = [
   },
   {
     q: "How can I contact or hire Kumar Ashutosh?",
-    a: `Kumar Ashutosh can be reached at ${person.email}, on LinkedIn at linkedin.com/in/shutupashu/, or via GitHub at github.com/importashutosh.`,
+    a: "The quickest way is to book a 30-minute call on Calendly or send a message through the contact page. Kumar is also on LinkedIn and GitHub.",
+  },
+  {
+    q: "What does Kumar Ashutosh know about system design?",
+    a: "Kumar Ashutosh designs event-driven and streaming systems at enterprise scale. His work includes a Kafka/Redpanda event evaluator with a ClickHouse profile store for sub-100ms segment reads (Segcon), Redis rate-limiting and Celery task queues in a journey orchestration engine (Zence Marketing), and a multi-tenant loyalty engine on Kafka event streams (LPaaS).",
+  },
+  {
+    q: "What real-time data architecture has Kumar Ashutosh built?",
+    a: "He built a streaming segmentation system that evaluates events on Kafka/Redpanda against 100M+ profiles and powers ₹250M+ in monthly client marketing revenue. His messaging platforms process 13B+ events annually, and Zence 360 uses Kafka for behavioral event streaming with Delta Lake for unified profile storage.",
+  },
+  {
+    q: "What is Kumar Ashutosh's experience with customer data platforms (CDP)?",
+    a: "He architected Zence 360, a cloud-native CDP that replaced a legacy on-prem stack, with identity resolution on Spark/Polars, Kafka event streaming and Delta Lake on Azure. It cut infrastructure cost by 35% and now manages 100M+ real-time customer profiles, including an 8-country deployment for Bata.",
   },
 ];
+
+// Rendered on /about/ only when non-empty. Add real, attributable entries only.
+export const testimonials: { quote: string; name: string; role: string }[] = [];
+export const featuredIn: { label: string; href: string }[] = [];

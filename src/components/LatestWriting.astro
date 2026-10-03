@@ -1,0 +1,23 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import PostCard from './PostCard.astro';
+
+interface Props {
+  posts: CollectionEntry<'blog'>[];
+}
+const posts = Astro.props.posts.slice(0, 3);
+---
+
+{posts.length > 0 && (
+  <section class="latest-writing container" id="writing" aria-labelledby="writing-title">
+    <p class="section-tag">Writing</p>
+    <h2 class="section-title" id="writing-title">Latest writing.</h2>
+    <div class="post-list">
+      {posts.map((post) => <PostCard post={post} headingLevel="h3" />)}
+    </div>
+    <p class="latest-writing-links">
+      <a class="text-link" href="/writing/">All writing →</a>
+      <a class="text-link" href="/series/system-design/">System design series →</a>
+    </p>
+  </section>
+)}

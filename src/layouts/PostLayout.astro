@@ -1,0 +1,147 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import type { MarkdownHeading } from 'astro';
+import Layout from './Layout.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import Subscribe from '../components/Subscribe.astro';
+import Sources from '../components/Sources.astro';
+import AuthorBox from '../components/AuthorBox.astro';
+import ShareLinks from '../components/ShareLinks.astro';
+import TOC from '../components/TOC.astro';
+import SeriesNav from '../components/SeriesNav.astro';
+import RelatedPosts from '../components/RelatedPosts.astro';
+import { getPublishedPosts } from '../lib/collection';
+import { readingMinutes, uniqueTags } from '../lib/posts';
+import { postCanonical } from '../lib/meta';
+import { absoluteUrl } from '../lib/url';
+import siteConfig from '../../site.config';
+
+interface Props {
+  post: CollectionEntry<'blog'>;
+  headings?: MarkdownHeading[];
+}
+const { post, headings = [] } = Astro.props;
+const { title, description, date, updated, tags, level, sources, ogImage } = post.data;
+const allPosts = await getPublishedPosts();
+const canonical = postCanonical(post);
+const minutes = readingMinutes(post.body ?? '');
+const fmt = (d: Date) =>
+  d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+const chips = uniqueTags(tags);
+const showUpdated = updated && updated.getTime() > date.getTime();
+---
+
+<Layout
+  title={`${title} | ${siteConfig.siteName}`}
+  description={description}
+  ogType="article"
+  canonicalUrl={canonical}
+  ogImage={ogImage ? absoluteUrl(ogImage) : undefined}
+>
+  <Nav current="writing" />
+  <main class="container post-page">
+    <article class="post">
+      <header class="post-header">
+        <p class="section-tag"><a href="/writing/">Writing</a></p>
+        <h1 class="post-title">{title}</h1>
+        <p class="post-meta">
+          <span>Published <time datetime={date.toISOString()}>{fmt(date)}</time></span>
+          {showUpdated && (
+            <>
+              <span aria-hidden="true">·</span>
+              <span>Updated <time datetime={updated.toISOString()}>{fmt(updated)}</time></span>
+            </>
+          )}
+          <span aria-hidden="true">·</span>
+          <span>{minutes} min read</span>
+          {level && <span class="level-badge">{level}</span>}
+        </p>
+        <ul class="tag-list" aria-label="Tags">
+          {chips.map((c) => (
+            <li><a class="tag-chip" href={`/writing/tags/${c.slug}/`}>{c.label}</a></li>
+          ))}
+        </ul>
+      </header>
+
+      <TOC headings={headings} />
+
+      <Subscribe source="post-intro" />
+
+      <div class="prose">
+        <slot />
+      </div>
+
+      <Sources sources={sources} />
+
+      <Subscribe source="post-end" />
+      <AuthorBox />
+      <ShareLinks title={title} url={canonical} />
+
+      <SeriesNav post={post} allPosts={allPosts} />
+      <RelatedPosts post={post} allPosts={allPosts} />
+    </article>
+  </main>
+  <Footer />
+
+  <script>
+    // Copy button on every code block. Plain DOM, no third-party code.
+    const copyText = async (text: string): Promise<boolean> => {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch {
+        return false;
+      }
+    };
+
+    document.querySelectorAll<HTMLPreElement>('.prose pre').forEach((pre) => {
+      const wrap = document.createElement('div');
+      wrap.className = 'code-block';
+      pre.replaceWith(wrap);
+      wrap.appendChild(pre);
+
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'copy-code-btn';
+      btn.textContent = 'Copy';
+      btn.setAttribute('aria-label', 'Copy code to clipboard');
+      const status = document.createElement('span');
+      status.className = 'sr-only';
+      status.setAttribute('role', 'status');
+      status.setAttribute('aria-live', 'polite');
+
+      btn.addEventListener('click', async () => {
+        const ok = await copyText(pre.innerText.replace(/\n$/, ''));
+        btn.textContent = ok ? 'Copied' : 'Copy failed';
+        status.textContent = ok ? 'Copied' : 'Copy failed';
+        setTimeout(() => {
+          btn.textContent = 'Copy';
+          status.textContent = '';
+        }, 2000);
+      });
+      wrap.append(btn, status);
+    });
+
+    // "#" permalink on each heading that has an id (ids themselves are build-time).
+    document.querySelectorAll<HTMLHeadingElement>('.prose :is(h2, h3, h4)[id]').forEach((h) => {
+      const a = document.createElement('a');
+      a.className = 'heading-anchor';
+      a.href = `#${h.id}`;
+      a.textContent = '#';
+      a.setAttribute('aria-label', 'Link to this section');
+      h.appendChild(a);
+    });
+
+    document.querySelectorAll<HTMLButtonElement>('[data-copy-link]').forEach((btn) => {
+      const status = btn.parentElement?.querySelector('.copy-status');
+      btn.addEventListener('click', async () => {
+        const ok = await copyText(btn.dataset.copyLink ?? location.href);
+        if (status) status.textContent = ok ? 'Link copied' : 'Copy failed';
+        setTimeout(() => {
+          if (status) status.textContent = '';
+        }, 2000);
+      });
+    });
+  </script>
+</Layout>

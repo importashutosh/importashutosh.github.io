@@ -1,0 +1,20 @@
+---
+interface Props {
+  sources?: { title: string; url: string; publisher?: string }[];
+}
+const { sources = [] } = Astro.props;
+---
+
+{sources.length > 0 && (
+  <section class="post-sources" aria-labelledby="sources-heading">
+    <h2 id="sources-heading">Sources</h2>
+    <ul>
+      {sources.map((s) => (
+        <li>
+          <a href={s.url} target="_blank" rel="noopener noreferrer">{s.title}</a>
+          {s.publisher && <span class="source-publisher"> ({s.publisher})</span>}
+        </li>
+      ))}
+    </ul>
+  </section>
+)}

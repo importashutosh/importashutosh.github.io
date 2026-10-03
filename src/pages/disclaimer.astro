@@ -1,0 +1,23 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import DraftBanner from '../components/DraftBanner.astro';
+---
+
+<Layout
+  title="Disclaimer | Kumar Ashutosh"
+  description="Draft disclaimer: views here are personal, and the writing is educational content, not professional or legal advice."
+  canonicalPath="/disclaimer/"
+>
+  <Nav />
+  <main class="container page-narrow legal">
+    <DraftBanner />
+    <p class="section-tag">Legal</p>
+    <h1 class="section-title">Disclaimer</h1>
+    <p>Views expressed here are my own and do not represent my employer.</p>
+    <p>Everything on this site is educational content, not professional or legal advice. Systems differ; test any approach against your own requirements before relying on it.</p>
+    <p>Links to other sites are provided for convenience and I am not responsible for their content.</p>
+  </main>
+  <Footer />
+</Layout>

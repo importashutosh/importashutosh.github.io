@@ -1,0 +1,83 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Nav from '../../components/Nav.astro';
+import Footer from '../../components/Footer.astro';
+import PostCard from '../../components/PostCard.astro';
+import Subscribe from '../../components/Subscribe.astro';
+import { getPublishedPosts } from '../../lib/collection';
+import { collectTags } from '../../lib/posts';
+
+export async function getStaticPaths() {
+  const posts = await getPublishedPosts();
+  const size = 10;
+  const totalPages = Math.max(1, Math.ceil(posts.length / size));
+  const tags = collectTags(posts).map(({ tag, slug, count }) => ({ tag, slug, count }));
+  // Hand-rolled instead of paginate(): that emits nothing for an empty list,
+  // but /writing/ must exist regardless.
+  return Array.from({ length: totalPages }, (_, i) => {
+    const n = i + 1;
+    return {
+      params: { page: n === 1 ? undefined : `page/${n}` },
+      props: {
+        pageNum: n,
+        totalPages,
+        total: posts.length,
+        posts: posts.slice(i * size, (i + 1) * size),
+        tags,
+      },
+    };
+  });
+}
+
+const { pageNum, totalPages, total, posts, tags } = Astro.props;
+const prevHref = pageNum > 1 ? (pageNum === 2 ? '/writing/' : `/writing/page/${pageNum - 1}/`) : undefined;
+const nextHref = pageNum < totalPages ? `/writing/page/${pageNum + 1}/` : undefined;
+const title = pageNum > 1 ? `Writing, page ${pageNum} | Kumar Ashutosh` : 'Writing | Kumar Ashutosh';
+---
+
+<Layout
+  title={title}
+  description="Notes on data engineering, system design and AI products, from building real-time platforms at scale."
+>
+  <Nav current="writing" />
+  <main class="container blog-index">
+    <p class="section-tag">Writing</p>
+    <h1 class="section-title">Notes on data, systems and AI products</h1>
+    <p class="section-desc blog-intro">
+      <a class="text-link" href="/rss.xml">RSS feed</a>
+    </p>
+
+    {tags.length > 0 && (
+      <ul class="tag-list tag-index" aria-label="Browse by tag">
+        {tags.map((t) => (
+          <li><a class="tag-chip" href={`/writing/tags/${t.slug}/`}>{t.tag} <span class="tag-count">{t.count}</span></a></li>
+        ))}
+      </ul>
+    )}
+
+    {total === 0 ? (
+      <section class="blog-empty">
+        <h2>First posts are on the way</h2>
+        <p>
+          Subscribe via the <a class="text-link" href="/rss.xml">RSS feed</a> or start with the
+          <a class="text-link" href="/series/system-design/">System Design series</a>.
+        </p>
+      </section>
+    ) : (
+      <div class="post-list">
+        {posts.map((post) => <PostCard post={post} />)}
+      </div>
+    )}
+
+    {totalPages > 1 && (
+      <nav class="pagination" aria-label="Pagination">
+        {prevHref ? <a class="text-link" href={prevHref} rel="prev">← Newer</a> : <span></span>}
+        <span class="pagination-status">Page {pageNum} of {totalPages}</span>
+        {nextHref ? <a class="text-link" href={nextHref} rel="next">Older →</a> : <span></span>}
+      </nav>
+    )}
+
+    <Subscribe source="blog-index" />
+  </main>
+  <Footer />
+</Layout>

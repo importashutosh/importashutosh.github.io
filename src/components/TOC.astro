@@ -1,0 +1,87 @@
+---
+import type { MarkdownHeading } from 'astro';
+import { tocHeadings } from '../lib/posts';
+
+interface Props {
+  headings: MarkdownHeading[];
+}
+const items = tocHeadings(Astro.props.headings);
+---
+
+{items.length > 0 && (
+  <div class="toc-wrap">
+    <details class="toc" open>
+      <summary>On this page</summary>
+      <nav aria-label="Table of contents">
+        <ol>
+          {items.map((h) => (
+            <li class={h.depth === 3 ? 'toc-sub' : undefined}>
+              <a href={`#${h.slug}`}>{h.text}</a>
+            </li>
+          ))}
+        </ol>
+      </nav>
+    </details>
+  </div>
+)}
+
+<script>
+  const toc = document.querySelector<HTMLDetailsElement>('.toc');
+  if (toc) {
+    // Server-rendered open (works without JS and on the sidebar). At >= 1100px it is a fixed
+    // sidebar: always open, summary inert (not focusable, not a control). Below that it
+    // starts collapsed and stays a normal collapsible <details>.
+    const summary = toc.querySelector('summary');
+    const wide = window.matchMedia('(min-width: 1100px)');
+    const sync = () => {
+      if (wide.matches) {
+        toc.open = true;
+        summary?.setAttribute('inert', '');
+      } else {
+        summary?.removeAttribute('inert');
+      }
+    };
+    if (!wide.matches) toc.open = false;
+    sync();
+    wide.addEventListener('change', () => {
+      sync();
+      if (!wide.matches) toc.open = false;
+    });
+    toc.addEventListener('toggle', () => {
+      if (wide.matches && !toc.open) toc.open = true;
+    });
+
+    const links = new Map<string, HTMLAnchorElement>();
+    toc.querySelectorAll<HTMLAnchorElement>('nav a[href^="#"]').forEach((a) => {
+      links.set(decodeURIComponent(a.hash.slice(1)), a);
+    });
+    const targets = [...links.keys()]
+      .map((id) => document.getElementById(id))
+      .filter((el): el is HTMLElement => !!el);
+
+    if ('IntersectionObserver' in window && targets.length) {
+      const visible = new Set<string>();
+      let current = '';
+      const mark = (id: string) => {
+        if (id === current) return;
+        current = id;
+        links.forEach((a, key) => {
+          if (key === id) a.setAttribute('aria-current', 'true');
+          else a.removeAttribute('aria-current');
+        });
+      };
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (e.isIntersecting) visible.add(e.target.id);
+            else visible.delete(e.target.id);
+          }
+          const first = targets.find((t) => visible.has(t.id));
+          if (first) mark(first.id);
+        },
+        { rootMargin: '-88px 0px -65% 0px' },
+      );
+      targets.forEach((t) => io.observe(t));
+    }
+  }
+</script>

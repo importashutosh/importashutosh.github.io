@@ -1,0 +1,33 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { readingMinutes, uniqueTags } from '../lib/posts';
+
+interface Props {
+  post: CollectionEntry<'blog'>;
+  headingLevel?: 'h2' | 'h3';
+}
+const { post, headingLevel = 'h2' } = Astro.props;
+const Heading = headingLevel;
+const { title, description, date, tags, level } = post.data;
+const minutes = readingMinutes(post.body ?? '');
+const href = `/writing/${post.id}/`;
+const chips = uniqueTags(tags);
+---
+
+<article class="post-card">
+  <Heading class="post-card-title"><a href={href}>{title}</a></Heading>
+  <p class="post-card-desc">{description}</p>
+  <p class="post-card-meta">
+    <time datetime={date.toISOString()}>
+      {date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' })}
+    </time>
+    <span aria-hidden="true">·</span>
+    <span>{minutes} min read</span>
+    {level && <span class="level-badge">{level}</span>}
+  </p>
+  <ul class="tag-list" aria-label="Tags">
+    {chips.map((c) => (
+      <li><a class="tag-chip" href={`/writing/tags/${c.slug}/`}>{c.label}</a></li>
+    ))}
+  </ul>
+</article>

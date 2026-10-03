@@ -1,20 +1,37 @@
 ---
 import '../styles/global.css';
+import '@fontsource/ibm-plex-serif/500.css';
+import '@fontsource/ibm-plex-serif/600.css';
+import '@fontsource/ibm-plex-serif/700.css';
+import '@fontsource-variable/inter';
+// Preload the latin subsets used above the fold so the font swap does not shift layout (CLS).
+import interLatin from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url';
+import plex600Latin from '@fontsource/ibm-plex-serif/files/ibm-plex-serif-latin-600-normal.woff2?url';
 import { person } from '../data/content';
+import { absoluteUrl } from '../lib/url';
+import siteConfig from '../../site.config';
 
 interface Props {
   title?: string;
   description?: string;
   ogImage?: string;
+  canonicalPath?: string;
+  canonicalUrl?: string;
+  ogType?: 'website' | 'article';
+  noindex?: boolean;
 }
 
 const {
   title = `${person.name} | ${person.title}`,
   description = `AVP of Data Engineering, AI & Products at Easyrewardz. Leads a ${person.teamSize}-person team. Built real-time CDP for 100M+ customer profiles. 13B+ annual events processed. Financial Express FuTech Awards 2024 winner.`,
-  ogImage = `${person.siteUrl}/og.png`,
+  ogImage = absoluteUrl('/og.png'),
+  canonicalPath,
+  canonicalUrl,
+  ogType = 'website',
+  noindex = false,
 } = Astro.props;
 
-const canonical = person.siteUrl;
+const canonical = canonicalUrl ?? absoluteUrl(canonicalPath ?? Astro.url.pathname);
 ---
 <!doctype html>
 <html lang="en">
@@ -23,10 +40,13 @@ const canonical = person.siteUrl;
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{title}</title>
   <meta name="description" content={description} />
-  <link rel="canonical" href={canonical} />
+  {!noindex && <link rel="canonical" href={canonical} />}
+  <link rel="preload" as="font" type="font/woff2" href={interLatin} crossorigin />
+  <link rel="preload" as="font" type="font/woff2" href={plex600Latin} crossorigin />
+  {noindex && <meta name="robots" content="noindex" />}
 
   <!-- Open Graph -->
-  <meta property="og:type" content="website" />
+  <meta property="og:type" content={ogType} />
   <meta property="og:url" content={canonical} />
   <meta property="og:title" content={title} />
   <meta property="og:description" content={description} />
@@ -40,46 +60,17 @@ const canonical = person.siteUrl;
   <meta name="twitter:description" content={description} />
   <meta name="twitter:image" content={ogImage} />
 
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-
   <!-- Without JS the scroll-reveal observer never runs, so show everything -->
   <noscript><style>.reveal, .reveal-stagger > * { opacity: 1 !important; transform: none !important; }</style></noscript>
 
   <!-- Favicon -->
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 
-  <!-- JSON-LD: Person -->
-  <script type="application/ld+json" set:html={JSON.stringify({
-    "@context": "https://schema.org",
-    "@type": "Person",
-    "name": person.name,
-    "jobTitle": person.title,
-    "worksFor": {
-      "@type": "Organization",
-      "name": person.company
-    },
-    "url": person.siteUrl,
-    "email": person.email,
-    "telephone": person.phone,
-    "address": {
-      "@type": "PostalAddress",
-      "addressLocality": "Gurugram",
-      "addressCountry": "IN"
-    },
-    "sameAs": [person.linkedin, person.github, person.blog],
-    "award": person.award,
-    "knowsAbout": [
-      "Data Engineering", "Customer Data Platform", "GenAI", "LangGraph",
-      "Apache Kafka", "ClickHouse", "LLM", "Machine Learning", "Product Management",
-      "Agentic AI", "MCP Gateway", "Voice AI"
-    ]
-  })} />
+  <link rel="alternate" type="application/rss+xml" title={`${person.name} | Writing`} href="/rss.xml" />
+  <slot name="head" />
 
   <!-- Plausible analytics (privacy-friendly) — register this domain at plausible.io -->
-  <script defer data-domain="importashutosh.github.io" src="https://plausible.io/js/script.js"></script>
+  <script defer data-domain={new URL(siteConfig.siteUrl).host} src="https://plausible.io/js/script.js"></script>
 </head>
 <body>
   <slot />

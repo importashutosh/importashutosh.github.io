@@ -5,10 +5,9 @@
 - Title: AVP – Data Engineering, AI & Products
 - Company: Easyrewardz
 - Location: Gurugram, India
-- Email: ashutosh.jha3006@gmail.com
 - LinkedIn: https://www.linkedin.com/in/shutupashu/
 - GitHub: https://github.com/importashutosh
-- Blog: https://bit.ly/Dataphilosophy
+- Writing: https://importashutosh.github.io/writing/
 - Resume (PDF): https://importashutosh.github.io/resume.pdf
 
 ## What I Do
