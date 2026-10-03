@@ -7,6 +7,7 @@ import {
   relatedPosts,
   seriesPosts,
   assertSeriesIntegrity,
+  assertRoutablePostIds,
   readingMinutes,
   type PostLike,
 } from './posts';
@@ -95,6 +96,23 @@ describe('relatedPosts', () => {
     const r = relatedPosts(self, all);
     expect(r.map((p) => p.id)).toEqual(['three', 'two', 'four']);
     expect(r.find((p) => p.id === 'self')).toBeUndefined();
+  });
+});
+
+describe('assertRoutablePostIds', () => {
+  const bad = ['page', 'tags', 'tags/foo', 'page/2', '123', '/lead', 'trail/', 'a//b'];
+  for (const id of bad) {
+    it(`rejects "${id}"`, () => {
+      expect(() => assertRoutablePostIds([mk(id)])).toThrow(new RegExp(id.replace(/[/]/g, '\\/')));
+    });
+  }
+  it('lists every offending id in one error', () => {
+    expect(() => assertRoutablePostIds([mk('page'), mk('ok'), mk('tags')])).toThrow(/page[\s\S]*tags/);
+  });
+  it('accepts normal ids', () => {
+    expect(() =>
+      assertRoutablePostIds([mk('rate-limiting'), mk('system-design/cqrs'), mk('2024-recap')]),
+    ).not.toThrow();
   });
 });
 

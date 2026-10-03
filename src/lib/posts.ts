@@ -100,6 +100,26 @@ export function assertSeriesIntegrity(posts: PostLike[], knownSeries: string[]):
   if (errors.length) throw new Error(`Series integrity check failed:\n${errors.join('\n')}`);
 }
 
+/** Fail the build when a post id would collide with /writing/page/N/, /writing/tags/... or be ambiguous. */
+export function assertRoutablePostIds(posts: PostLike[]): void {
+  const bad = posts
+    .map((p) => p.id)
+    .filter(
+      (id) =>
+        id === 'page' ||
+        id === 'tags' ||
+        id.startsWith('page/') ||
+        id.startsWith('tags/') ||
+        /^\d+$/.test(id) ||
+        id.split('/').some((seg) => seg === ''),
+    );
+  if (bad.length) {
+    throw new Error(
+      `Post ids collide with reserved /writing/ routes or are malformed: ${bad.map((id) => `"${id}"`).join(', ')}. Rename the files.`,
+    );
+  }
+}
+
 export function readingMinutes(body: string): number {
   const text = body
     .replace(/^(```|~~~)[^\n]*\n[\s\S]*?^\1[ \t]*$/gm, ' ')
