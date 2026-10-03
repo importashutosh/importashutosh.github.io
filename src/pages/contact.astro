@@ -1,0 +1,21 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import ContactForm from '../components/ContactForm.astro';
+---
+
+<Layout
+  title="Contact | Kumar Ashutosh"
+  description="Get in touch with Kumar Ashutosh: book a call or message on LinkedIn about data engineering, system design and AI products."
+  canonicalPath="/contact/"
+>
+  <Nav />
+  <main class="container page-narrow">
+    <p class="section-tag">Contact</p>
+    <h1 class="section-title">Get in touch</h1>
+    <p class="section-desc">The quickest way to reach me is to book a call or send a message on LinkedIn.</p>
+    <ContactForm />
+  </main>
+  <Footer />
+</Layout>

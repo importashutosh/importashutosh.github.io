@@ -329,3 +329,7 @@ export const faq = [
     a: "He architected Zence 360, a cloud-native CDP that replaced a legacy on-prem stack, with identity resolution on Spark/Polars, Kafka event streaming and Delta Lake on Azure. It cut infrastructure cost by 35% and now manages 100M+ real-time customer profiles, including an 8-country deployment for Bata.",
   },
 ];
+
+// Rendered on /about/ only when non-empty. Add real, attributable entries only.
+export const testimonials: { quote: string; name: string; role: string }[] = [];
+export const featuredIn: { label: string; href: string }[] = [];

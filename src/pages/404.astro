@@ -1,27 +1,39 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import LatestWriting from '../components/LatestWriting.astro';
+import Subscribe from '../components/Subscribe.astro';
 import { person } from '../data/content';
+import { getPublishedPosts } from '../lib/collection';
+
+const posts = await getPublishedPosts();
 ---
 
-<Layout title={`Page not found | ${person.name}`}>
-  <main class="container not-found">
-    <p class="section-tag">404</p>
-    <h1 class="section-title">This page doesn't exist.</h1>
-    <p class="section-desc">The link may be broken or the page may have moved.</p>
-    <div class="hero-ctas">
-      <a href="/" class="btn btn-primary">Back to home →</a>
-      <a href="/#products" class="btn btn-ghost">View case studies</a>
+<Layout title={`Page not found | ${person.name}`} noindex>
+  <Nav />
+  <main>
+    <div class="container not-found">
+      <p class="section-tag">404</p>
+      <h1 class="section-title">This page doesn't exist.</h1>
+      <p class="section-desc">The link may be broken or the page may have moved.</p>
+      <div class="hero-ctas">
+        <a href="/" class="btn btn-primary">Back to home →</a>
+        <a href="/#products" class="btn btn-ghost">View case studies</a>
+      </div>
     </div>
+    <LatestWriting posts={posts} />
+    <div class="container not-found-subscribe"><Subscribe source="404" /></div>
   </main>
+  <Footer />
 </Layout>
 
 <style>
   .not-found {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+    padding-top: 120px;
+    padding-bottom: 48px;
     position: relative;
     z-index: 1;
   }
+  .not-found-subscribe { padding-bottom: 72px; }
 </style>

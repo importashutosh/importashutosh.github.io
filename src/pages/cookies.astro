@@ -1,0 +1,32 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import DraftBanner from '../components/DraftBanner.astro';
+---
+
+<Layout
+  title="Cookies | Kumar Ashutosh"
+  description="Draft cookie notice: this site sets no cookies today, and lists the consent categories planned if analytics or advertising are added."
+  canonicalPath="/cookies/"
+>
+  <Nav />
+  <main class="container page-narrow legal">
+    <DraftBanner />
+    <p class="section-tag">Legal</p>
+    <h1 class="section-title">Cookies</h1>
+
+    <h2>Today</h2>
+    <p>This site sets no cookies of its own, and there is no consent banner. Its analytics tool, Plausible Analytics, does not use cookies.</p>
+
+    <h2>Planned categories</h2>
+    <p>Not active today. If either is added, a consent banner would be added with it.</p>
+    <ul>
+      <li>Analytics: Google Analytics 4, to understand which writing is useful.</li>
+      <li>Advertising: Google AdSense, to help cover running costs.</li>
+    </ul>
+
+    <p>See the <a class="text-link" href="/privacy/">privacy page</a> for more.</p>
+  </main>
+  <Footer />
+</Layout>
