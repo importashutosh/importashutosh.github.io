@@ -848,3 +848,13 @@ a.series-topic-link:focus-visible { outline: 2px solid var(--accent); outline-of
 .about-featured { list-style: none; display: flex; flex-wrap: wrap; gap: 4px 24px; }
 .about-links { display: flex; flex-wrap: wrap; gap: 4px 24px; font-size: var(--fs-sm); }
 @media (max-width: 640px) { .page-narrow { padding-top: 96px; } }
+
+/* ── Task 12 QA fixes: 320px home overflow, 44px tap targets ────── */
+.footer-links a:not(.btn) { display: inline-flex; align-items: center; min-height: 44px; }
+.nav-logo { min-height: 44px; }
+.nav-mobile-toggle { width: 44px; height: 44px; }
+.section-tag a { display: inline-block; padding: 14px 0; margin: -14px 0; }
+@media (max-width: 640px) {
+  .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stat-cell { padding: 24px 16px; min-width: 0; overflow-wrap: anywhere; }
+}
