@@ -10,7 +10,7 @@ const items = tocHeadings(Astro.props.headings);
 
 {items.length > 0 && (
   <div class="toc-wrap">
-    <details class="toc">
+    <details class="toc" open>
       <summary>On this page</summary>
       <nav aria-label="Table of contents">
         <ol>
@@ -28,13 +28,28 @@ const items = tocHeadings(Astro.props.headings);
 <script>
   const toc = document.querySelector<HTMLDetailsElement>('.toc');
   if (toc) {
-    // Sidebar (>= 1100px) is always open; on smaller screens it starts collapsed.
+    // Server-rendered open (works without JS and on the sidebar). At >= 1100px it is a fixed
+    // sidebar: always open, summary inert (not focusable, not a control). Below that it
+    // starts collapsed and stays a normal collapsible <details>.
+    const summary = toc.querySelector('summary');
     const wide = window.matchMedia('(min-width: 1100px)');
     const sync = () => {
-      if (wide.matches) toc.open = true;
+      if (wide.matches) {
+        toc.open = true;
+        summary?.setAttribute('inert', '');
+      } else {
+        summary?.removeAttribute('inert');
+      }
     };
+    if (!wide.matches) toc.open = false;
     sync();
-    wide.addEventListener('change', sync);
+    wide.addEventListener('change', () => {
+      sync();
+      if (!wide.matches) toc.open = false;
+    });
+    toc.addEventListener('toggle', () => {
+      if (wide.matches && !toc.open) toc.open = true;
+    });
 
     const links = new Map<string, HTMLAnchorElement>();
     toc.querySelectorAll<HTMLAnchorElement>('nav a[href^="#"]').forEach((a) => {
