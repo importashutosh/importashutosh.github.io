@@ -9,6 +9,8 @@ import {
   assertSeriesIntegrity,
   assertRoutablePostIds,
   readingMinutes,
+  seriesNeighbours,
+  tocHeadings,
   type PostLike,
 } from './posts';
 
@@ -154,5 +156,36 @@ describe('readingMinutes', () => {
   it('ignores fenced code and import lines', () => {
     const code = '```ts\n' + 'code '.repeat(1000) + '\n```';
     expect(readingMinutes('hello world\n' + code + '\nimport X from "./x.astro"\n')).toBe(1);
+  });
+});
+
+describe('seriesNeighbours', () => {
+  const a = mk('a', { series: 's', seriesOrder: 1 });
+  const b = mk('b', { series: 's', seriesOrder: 2 });
+  const c = mk('c', { series: 's', seriesOrder: 4 });
+  const other = mk('o', { series: 'x', seriesOrder: 1 });
+  const none = mk('n');
+  it('returns only next for the first post', () => {
+    expect(seriesNeighbours([c, other, b, a], a)).toEqual({ prev: undefined, next: b });
+  });
+  it('returns prev and next for a middle post, skipping missing orders', () => {
+    expect(seriesNeighbours([a, b, c], b)).toEqual({ prev: a, next: c });
+  });
+  it('returns only prev for the last published post', () => {
+    expect(seriesNeighbours([a, b], b)).toEqual({ prev: a, next: undefined });
+  });
+  it('returns nothing for posts without a series', () => {
+    expect(seriesNeighbours([a, none], none)).toEqual({ prev: undefined, next: undefined });
+  });
+});
+
+describe('tocHeadings', () => {
+  const h = (depth: number, slug: string) => ({ depth, slug, text: slug });
+  it('keeps only h2 and h3', () => {
+    const out = tocHeadings([h(1, 't'), h(2, 'a'), h(4, 'x'), h(3, 'b'), h(2, 'c')]);
+    expect(out.map((x) => x.slug)).toEqual(['a', 'b', 'c']);
+  });
+  it('returns empty with fewer than 3 usable headings', () => {
+    expect(tocHeadings([h(2, 'a'), h(3, 'b'), h(4, 'c')])).toEqual([]);
   });
 });

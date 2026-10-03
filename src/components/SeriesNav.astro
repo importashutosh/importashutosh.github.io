@@ -1,0 +1,36 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { series } from '../data/series';
+import { seriesNeighbours } from '../lib/posts';
+
+interface Props {
+  post: CollectionEntry<'blog'>;
+  allPosts: CollectionEntry<'blog'>[];
+}
+const { post, allPosts } = Astro.props;
+const info = post.data.series ? series[post.data.series] : undefined;
+const { prev, next } = info ? seriesNeighbours(allPosts, post) : { prev: undefined, next: undefined };
+---
+
+{info && (
+  <nav class="series-nav" aria-label={`${info.title} series`}>
+    <p class="series-nav-title">
+      <a href={`/series/${info.id}/`}>{info.title}</a>
+      <span>Part {post.data.seriesOrder} of {info.topics.length}</span>
+    </p>
+    <div class="series-nav-links">
+      {prev && (
+        <a class="series-link series-prev" href={`/writing/${prev.id}/`} rel="prev">
+          <span class="series-dir">Previous</span>
+          <span>{prev.data.title}</span>
+        </a>
+      )}
+      {next && (
+        <a class="series-link series-next" href={`/writing/${next.id}/`} rel="next">
+          <span class="series-dir">Next</span>
+          <span>{next.data.title}</span>
+        </a>
+      )}
+    </div>
+  </nav>
+)}

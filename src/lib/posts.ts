@@ -79,6 +79,25 @@ export function seriesPosts<T extends PostLike>(posts: T[], seriesId: string): T
     .sort((a, b) => (a.data.seriesOrder ?? 0) - (b.data.seriesOrder ?? 0));
 }
 
+/** Previous/next published post in the same series (by seriesOrder). */
+export function seriesNeighbours<T extends PostLike>(
+  posts: T[],
+  post: T,
+): { prev: T | undefined; next: T | undefined } {
+  const id = post.data.series;
+  if (!id) return { prev: undefined, next: undefined };
+  const list = seriesPosts(posts, id);
+  const i = list.findIndex((p) => p.id === post.id);
+  if (i === -1) return { prev: undefined, next: undefined };
+  return { prev: list[i - 1], next: list[i + 1] };
+}
+
+/** H2/H3 headings for the table of contents; empty (no TOC) with fewer than 3. */
+export function tocHeadings<H extends { depth: number }>(headings: H[]): H[] {
+  const usable = headings.filter((h) => h.depth === 2 || h.depth === 3);
+  return usable.length >= 3 ? usable : [];
+}
+
 export function assertSeriesIntegrity(posts: PostLike[], knownSeries: string[]): void {
   const errors: string[] = [];
   const seen = new Map<string, string>();

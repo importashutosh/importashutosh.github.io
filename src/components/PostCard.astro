@@ -4,8 +4,10 @@ import { readingMinutes, tagSlug } from '../lib/posts';
 
 interface Props {
   post: CollectionEntry<'blog'>;
+  headingLevel?: 'h2' | 'h3';
 }
-const { post } = Astro.props;
+const { post, headingLevel = 'h2' } = Astro.props;
+const Heading = headingLevel;
 const { title, description, date, tags, level } = post.data;
 const minutes = readingMinutes(post.body ?? '');
 const href = `/writing/${post.id}/`;
@@ -16,7 +18,7 @@ const chips = tags
 ---
 
 <article class="post-card">
-  <h2 class="post-card-title"><a href={href}>{title}</a></h2>
+  <Heading class="post-card-title"><a href={href}>{title}</a></Heading>
   <p class="post-card-desc">{description}</p>
   <p class="post-card-meta">
     <time datetime={date.toISOString()}>

@@ -8,6 +8,10 @@ import Subscribe from '../components/Subscribe.astro';
 import Sources from '../components/Sources.astro';
 import AuthorBox from '../components/AuthorBox.astro';
 import ShareLinks from '../components/ShareLinks.astro';
+import TOC from '../components/TOC.astro';
+import SeriesNav from '../components/SeriesNav.astro';
+import RelatedPosts from '../components/RelatedPosts.astro';
+import { getPublishedPosts } from '../lib/collection';
 import { readingMinutes, tagSlug } from '../lib/posts';
 import { postCanonical } from '../lib/meta';
 import { absoluteUrl } from '../lib/url';
@@ -19,6 +23,7 @@ interface Props {
 }
 const { post, headings = [] } = Astro.props;
 const { title, description, date, updated, tags, level, sources, ogImage } = post.data;
+const allPosts = await getPublishedPosts();
 const canonical = postCanonical(post);
 const minutes = readingMinutes(post.body ?? '');
 const fmt = (d: Date) =>
@@ -62,12 +67,11 @@ const showUpdated = updated && updated.getTime() > date.getTime();
         </ul>
       </header>
 
-      {/* TASK 6: <TOC headings={headings} /> goes here (after the header, before the intro Subscribe). */}
-      <slot name="toc" />
+      <TOC headings={headings} />
 
       <Subscribe source="post-intro" />
 
-      <div class="prose" data-headings={headings.length}>
+      <div class="prose">
         <slot />
       </div>
 
@@ -77,10 +81,8 @@ const showUpdated = updated && updated.getTime() > date.getTime();
       <AuthorBox />
       <ShareLinks title={title} url={canonical} />
 
-      {/* TASK 6: <SeriesNav post={post} /> goes here. */}
-      <slot name="series-nav" />
-      {/* TASK 6: <RelatedPosts post={post} /> goes here. */}
-      <slot name="related" />
+      <SeriesNav post={post} allPosts={allPosts} />
+      <RelatedPosts post={post} allPosts={allPosts} />
     </article>
   </main>
   <Footer />
