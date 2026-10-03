@@ -2,6 +2,9 @@
 import Layout from '../layouts/Layout.astro';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
+import LatestWriting from '../components/LatestWriting.astro';
+import Subscribe from '../components/Subscribe.astro';
+import { getPublishedPosts } from '../lib/collection';
 import { absoluteUrl } from '../lib/url';
 import {
   person, hero, stats, products, clients, skills,
@@ -20,6 +23,15 @@ const faqSchema = {
       "text": item.a
     }
   }))
+};
+
+const latestPosts = (await getPublishedPosts()).slice(0, 3);
+
+const webSiteSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": person.name,
+  "url": absoluteUrl('/')
 };
 
 const personSchema = {
@@ -49,6 +61,7 @@ const personSchema = {
 
 <Layout>
   <script slot="head" type="application/ld+json" set:html={JSON.stringify(personSchema)} />
+  <script slot="head" type="application/ld+json" set:html={JSON.stringify(webSiteSchema)} />
 
   <!-- FAQ schema injected in page body for AEO -->
   <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
@@ -78,10 +91,10 @@ const personSchema = {
             <a href={hero.cta.primary.href} class="btn btn-primary" id="hero-cta-products">
               {hero.cta.primary.label} →
             </a>
-            <a href={hero.cta.secondary.href} download class="btn btn-ghost" id="hero-cta-resume">
+            <a href={hero.cta.secondary.href} download class="text-link" id="hero-cta-resume">
               ↓ {hero.cta.secondary.label}
             </a>
-            <a href={hero.cta.tertiary.href} target="_blank" rel="noopener" class="btn btn-ghost" id="hero-cta-call">
+            <a href={hero.cta.tertiary.href} target="_blank" rel="noopener" class="text-link" id="hero-cta-call">
               {hero.cta.tertiary.label}
             </a>
           </div>
@@ -104,7 +117,7 @@ const personSchema = {
           <div style="display:flex; gap:12px; flex-wrap:wrap;">
             <a href={person.linkedin} target="_blank" rel="noopener" class="btn btn-ghost btn-sm" id="profile-linkedin">LinkedIn ↗</a>
             <a href={person.github} target="_blank" rel="noopener" class="btn btn-ghost btn-sm" id="profile-github">GitHub ↗</a>
-            <a href={person.blog} target="_blank" rel="noopener" class="btn btn-ghost btn-sm" id="profile-blog">Blog ↗</a>
+            <a href="/writing/" class="btn btn-ghost btn-sm" id="profile-blog">Writing →</a>
           </div>
         </div>
       </div>
@@ -230,9 +243,12 @@ const personSchema = {
       </div>
     </section>
 
+    <!-- ── LATEST WRITING (renders nothing when no published posts) ── -->
+    <LatestWriting posts={latestPosts} />
+
     <!-- ── FAQ / AEO ───────────────────────────────────────────────── -->
     <section class="faq-section container" id="faq" aria-labelledby="faq-title">
-      <p class="section-tag">AEO — Answer Engine Optimization</p>
+      <p class="section-tag">FAQ</p>
       <h2 class="section-title" id="faq-title">Questions AI assistants get asked about Kumar.</h2>
       <p class="section-desc">
         These answers are structured so that ChatGPT, Perplexity, and Gemini can cite this page directly.
@@ -249,6 +265,10 @@ const personSchema = {
         ))}
       </div>
     </section>
+
+    <div class="container">
+      <Subscribe source="home" />
+    </div>
 
   </main>
 

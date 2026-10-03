@@ -810,3 +810,7 @@ a.series-topic-link:focus-visible { outline: 2px solid var(--accent); outline-of
   .prose pre { white-space: pre-wrap; overflow: visible; border: 1px solid #999; }
   .prose a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 0.85em; word-break: break-all; }
 }
+
+/* ── Home: latest writing + hero text links ─────────────────────── */
+.latest-writing-links { display: flex; flex-wrap: wrap; gap: 4px 24px; margin: 16px 0 0; font-size: var(--fs-sm); }
+.hero-ctas { align-items: center; }
