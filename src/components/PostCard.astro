@@ -1,6 +1,6 @@
 ---
 import type { CollectionEntry } from 'astro:content';
-import { readingMinutes, tagSlug } from '../lib/posts';
+import { readingMinutes, uniqueTags } from '../lib/posts';
 
 interface Props {
   post: CollectionEntry<'blog'>;
@@ -11,10 +11,7 @@ const Heading = headingLevel;
 const { title, description, date, tags, level } = post.data;
 const minutes = readingMinutes(post.body ?? '');
 const href = `/writing/${post.id}/`;
-const seen = new Set<string>();
-const chips = tags
-  .map((t) => ({ label: t.trim(), slug: tagSlug(t) }))
-  .filter((c) => c.slug && !seen.has(c.slug) && seen.add(c.slug));
+const chips = uniqueTags(tags);
 ---
 
 <article class="post-card">

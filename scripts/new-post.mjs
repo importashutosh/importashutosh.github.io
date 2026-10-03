@@ -3,6 +3,7 @@
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { slugCore } from './lib/slug.mjs';
 
 // Heading text is verbatim; hints go in the body. Keep in sync with src/content/blog/_template.mdx.
 const SKELETON = [
@@ -33,12 +34,7 @@ export const EDITORIAL_NOTE =
 const MAX_SLUG = 80;
 
 export function slugify(title) {
-  let slug = String(title)
-    .normalize('NFKD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
+  let slug = slugCore(title);
   if (slug.length > MAX_SLUG) {
     const cut = slug.slice(0, MAX_SLUG + 1);
     // Trim at a hyphen boundary when there is one, otherwise hard-cut.
@@ -71,7 +67,26 @@ ${EDITORIAL_NOTE}
 ${body}`;
 }
 
+export const TITLE_MIN = 10;
+export const TITLE_MAX = 70;
+
+// The content schema (src/content.config.ts) requires 10-70 characters, and Astro validates
+// drafts too, so a title outside the range would break every build once committed.
+export function assertTitleLength(title) {
+  const len = String(title).trim().length;
+  if (len < TITLE_MIN || len > TITLE_MAX) {
+    throw new Error(
+      `Title is ${len} characters; it must be between ${TITLE_MIN} and ${TITLE_MAX}. ` +
+        (len < TITLE_MIN
+          ? 'Lengthen it (for example "Caching" becomes "Caching strategies explained").'
+          : 'Shorten it (drop filler words or move detail into the description).'),
+    );
+  }
+}
+
 export function writePost(title, today, dir) {
+  title = String(title).trim();
+  assertTitleLength(title);
   const file = join(dir, `${slugify(title)}.mdx`);
   const exists = () => new Error(`${file} already exists; refusing to overwrite.`);
   if (existsSync(file)) throw exists();

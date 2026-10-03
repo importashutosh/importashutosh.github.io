@@ -4,10 +4,12 @@ import {
   sortNewestFirst,
   tagSlug,
   collectTags,
+  uniqueTags,
   relatedPosts,
   seriesPosts,
   assertSeriesIntegrity,
   assertRoutablePostIds,
+  assertNoPlaceholders,
   readingMinutes,
   seriesNeighbours,
   tocHeadings,
@@ -75,6 +77,24 @@ describe('tagSlug / collectTags', () => {
     expect(tags[0].count).toBe(3);
     expect(tags[0].posts).toHaveLength(3);
   });
+  it('folds accents and keeps C++ / C# distinct and readable', () => {
+    expect(tagSlug('Café')).toBe('cafe');
+    expect(tagSlug('C++')).toBe('c-plus-plus');
+    expect(tagSlug('C#')).toBe('c-sharp');
+    expect(tagSlug('C')).toBe('c');
+  });
+  it('keeps C, C++ and C# as three separate chips', () => {
+    const tags = collectTags([mk('a', { tags: ['C', 'C++', 'C#'] })]);
+    expect(tags.map((t) => t.slug).sort()).toEqual(['c', 'c-plus-plus', 'c-sharp']);
+  });
+  it('throws when two different spellings share a slug, naming both', () => {
+    const posts = [mk('a', { tags: ['Café'] }), mk('b', { tags: ['Cafe'] })];
+    expect(() => collectTags(posts)).toThrow(/Café.*Cafe|Cafe.*Café/);
+  });
+  it('throws when a tag has an empty slug', () => {
+    expect(() => collectTags([mk('a', { tags: ['日本語'] })])).toThrow(/日本語/);
+    expect(() => collectTags([mk('a', { tags: ['!!!'] })])).toThrow(/!!!/);
+  });
   it('sorts by count desc then name', () => {
     const posts = [
       mk('a', { tags: ['b', 'a'] }),
@@ -130,19 +150,35 @@ describe('seriesPosts', () => {
 });
 
 describe('assertSeriesIntegrity', () => {
+  const known = { s: { topics: [{ order: 1 }, { order: 2 }] } };
   it('throws on duplicate order, naming both ids', () => {
     const posts = [
       mk('p1', { series: 's', seriesOrder: 1 }),
       mk('p2', { series: 's', seriesOrder: 1 }),
     ];
-    expect(() => assertSeriesIntegrity(posts, ['s'])).toThrow(/p1.*p2|p2.*p1/);
+    expect(() => assertSeriesIntegrity(posts, known)).toThrow(/p1.*p2|p2.*p1/);
   });
   it('throws on unknown series', () => {
     const posts = [mk('p1', { series: 'nope', seriesOrder: 1 })];
-    expect(() => assertSeriesIntegrity(posts, ['s'])).toThrow(/p1/);
+    expect(() => assertSeriesIntegrity(posts, known)).toThrow(/p1/);
   });
   it('does not throw for posts without series', () => {
-    expect(() => assertSeriesIntegrity([mk('p1'), mk('p2')], ['s'])).not.toThrow();
+    expect(() => assertSeriesIntegrity([mk('p1'), mk('p2')], known)).not.toThrow();
+  });
+  it('throws when seriesOrder has no matching topic, naming post, order, series and the fix', () => {
+    const posts = [mk('p9', { series: 's', seriesOrder: 9 })];
+    expect(() => assertSeriesIntegrity(posts, known)).toThrow(/p9/);
+    expect(() => assertSeriesIntegrity(posts, known)).toThrow(/9/);
+    expect(() => assertSeriesIntegrity(posts, known)).toThrow(/"s"/);
+    expect(() => assertSeriesIntegrity(posts, known)).toThrow(/add the topic to src\/data\/series\.ts/);
+  });
+  it('throws when a series post has no seriesOrder', () => {
+    const posts = [mk('p0', { series: 's' })];
+    expect(() => assertSeriesIntegrity(posts, known)).toThrow(/p0.*seriesOrder/);
+  });
+  it('passes when every order matches a topic', () => {
+    const posts = [mk('p1', { series: 's', seriesOrder: 1 }), mk('p2', { series: 's', seriesOrder: 2 })];
+    expect(() => assertSeriesIntegrity(posts, known)).not.toThrow();
   });
 });
 
@@ -187,5 +223,51 @@ describe('tocHeadings', () => {
   });
   it('returns empty with fewer than 3 usable headings', () => {
     expect(tocHeadings([h(2, 'a'), h(3, 'b'), h(4, 'c')])).toEqual([]);
+  });
+});
+
+describe('assertNoPlaceholders', () => {
+  const clean = () => mk('clean', { tags: ['caching'], description: 'A real description.' }, 'Real body.\n');
+  it('passes a clean post', () => {
+    expect(() => assertNoPlaceholders([clean()])).not.toThrow();
+  });
+  it('throws naming a published post with the todo-replace-me tag', () => {
+    const bad = mk('bad-tag', { tags: ['todo-replace-me'] });
+    expect(() => assertNoPlaceholders([clean(), bad])).toThrow(/bad-tag/);
+  });
+  it('throws on TODO or PLACEHOLDER in title or description', () => {
+    expect(() => assertNoPlaceholders([mk('t1', { title: 'TODO write title' })])).toThrow(/t1/);
+    expect(() => assertNoPlaceholders([mk('d1', { description: 'TODO: write a summary' })])).toThrow(/d1/);
+    expect(() => assertNoPlaceholders([mk('d2', { description: 'PLACEHOLDER text' })])).toThrow(/d2/);
+  });
+  it('does not flag words that merely contain todo', () => {
+    expect(() => assertNoPlaceholders([mk('ok', { description: 'Mastodon and todos' })])).not.toThrow();
+  });
+  it('throws on a body line starting with TODO or containing PLACEHOLDER', () => {
+    expect(() => assertNoPlaceholders([mk('b1', {}, '## H\n\nTODO: fill in\n')])).toThrow(/b1/);
+    expect(() => assertNoPlaceholders([mk('b2', {}, 'some PLACEHOLDER here')])).toThrow(/b2/);
+  });
+  it('names every offender in a single error', () => {
+    let msg = '';
+    try {
+      assertNoPlaceholders([mk('x1', { tags: ['todo-replace-me'] }), mk('x2', { title: 'TODO' })]);
+    } catch (e) {
+      msg = (e as Error).message;
+    }
+    expect(msg).toMatch(/x1/);
+    expect(msg).toMatch(/x2/);
+  });
+  it('exempts drafts', () => {
+    const draft = mk('wip', { draft: true, tags: ['todo-replace-me'], description: 'TODO' }, 'TODO: x');
+    expect(() => assertNoPlaceholders([draft])).not.toThrow();
+  });
+});
+
+describe('uniqueTags', () => {
+  it('dedupes by slug, keeps first trimmed label, drops empty', () => {
+    expect(uniqueTags(['System Design', ' system-design ', 'CQRS & Saga', '!!!'])).toEqual([
+      { label: 'System Design', slug: 'system-design' },
+      { label: 'CQRS & Saga', slug: 'cqrs-saga' },
+    ]);
   });
 });

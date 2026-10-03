@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -37,6 +37,9 @@ describe('slugify', () => {
   });
   it('folds accented characters', () => {
     expect(slugify('Café Résumé Naïve')).toBe('cafe-resume-naive');
+  });
+  it('shares one implementation with tag slugs (plus/sharp)', () => {
+    expect(slugify('C++ vs C# for Systems Work')).toBe('c-plus-plus-vs-c-sharp-for-systems-work');
   });
   it('never produces dots or slashes', () => {
     const s: string = slugify('../x');
@@ -90,5 +93,26 @@ describe('writePost', () => {
   it('rejects titles that produce an empty slug', () => {
     const dir = mkdtempSync(join(tmpdir(), 'new-post-'));
     expect(() => writePost('!!!', '2026-10-03', dir)).toThrow();
+  });
+});
+
+describe('title length (schema is 10-70 characters)', () => {
+  const fresh = () => mkdtempSync(join(tmpdir(), 'new-post-'));
+  it('rejects a title shorter than 10 characters and writes nothing', () => {
+    const dir = fresh();
+    expect(() => writePost('CQRS', '2026-10-03', dir)).toThrow(/10.*70|between 10 and 70/);
+    expect(readdirSync(dir)).toEqual([]);
+  });
+  it('rejects a title longer than 70 characters and writes nothing', () => {
+    const dir = fresh();
+    expect(() => writePost('w'.repeat(71), '2026-10-03', dir)).toThrow(/shorten/i);
+    expect(readdirSync(dir)).toEqual([]);
+  });
+  it('measures length after trimming', () => {
+    expect(() => writePost('   CQRS      ', '2026-10-03', fresh())).toThrow(/lengthen/i);
+  });
+  it('accepts exactly 10 and exactly 70 characters', () => {
+    expect(() => writePost('a'.repeat(10), '2026-10-03', fresh())).not.toThrow();
+    expect(() => writePost('b'.repeat(70), '2026-10-03', fresh())).not.toThrow();
   });
 });

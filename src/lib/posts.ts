@@ -1,4 +1,6 @@
 // Pure helpers: no runtime import from `astro:content` so Vitest can load this file.
+import { slugCore } from '../../scripts/lib/slug.mjs';
+
 export type PostLike = {
   id: string;
   body?: string;
@@ -30,32 +32,58 @@ export function sortNewestFirst<T extends PostLike>(posts: T[]): T[] {
 }
 
 export function tagSlug(tag: string): string {
-  return tag
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
+  return slugCore(tag);
 }
+
+/** Tag labels deduplicated by slug (first spelling wins, trimmed); tags with an empty slug are dropped. */
+export function uniqueTags(tags: string[]): { label: string; slug: string }[] {
+  const seen = new Set<string>();
+  const out: { label: string; slug: string }[] = [];
+  for (const t of tags) {
+    const slug = tagSlug(t);
+    if (!slug || seen.has(slug)) continue;
+    seen.add(slug);
+    out.push({ label: t.trim(), slug });
+  }
+  return out;
+}
+
+// Spellings that differ only by case, surrounding whitespace, or space/underscore vs hyphen are one tag.
+const tagVariantKey = (tag: string) => tag.trim().toLowerCase().replace(/[\s_-]+/g, '-');
 
 export function collectTags<T extends PostLike>(
   posts: T[],
 ): { tag: string; slug: string; count: number; posts: T[] }[] {
   const map = new Map<string, { tag: string; slug: string; count: number; posts: T[] }>();
+  const variants = new Map<string, Map<string, string>>(); // slug -> variantKey -> first raw spelling
+  const errors: string[] = [];
   for (const post of posts) {
-    const seen = new Set<string>();
     for (const raw of post.data.tags) {
       const slug = tagSlug(raw);
-      if (!slug || seen.has(slug)) continue;
-      seen.add(slug);
+      if (!slug) {
+        errors.push(`Tag "${raw}" (post "${post.id}") produces an empty URL slug; use ASCII letters or digits`);
+        continue;
+      }
+      let byKey = variants.get(slug);
+      if (!byKey) variants.set(slug, (byKey = new Map()));
+      byKey.set(tagVariantKey(raw), byKey.get(tagVariantKey(raw)) ?? raw.trim());
+    }
+    for (const { label, slug } of uniqueTags(post.data.tags)) {
       let entry = map.get(slug);
       if (!entry) {
-        entry = { tag: raw.trim(), slug, count: 0, posts: [] };
+        entry = { tag: label, slug, count: 0, posts: [] };
         map.set(slug, entry);
       }
       entry.count++;
       entry.posts.push(post);
     }
   }
+  for (const [slug, byKey] of variants) {
+    if (byKey.size > 1) {
+      errors.push(`Tags ${[...byKey.values()].map((v) => `"${v}"`).join(' and ')} both map to the URL slug "${slug}"; use one spelling`);
+    }
+  }
+  if (errors.length) throw new Error(`Tag check failed:\n${errors.join('\n')}`);
   return [...map.values()].sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag));
 }
 
@@ -98,20 +126,35 @@ export function tocHeadings<H extends { depth: number }>(headings: H[]): H[] {
   return usable.length >= 3 ? usable : [];
 }
 
-export function assertSeriesIntegrity(posts: PostLike[], knownSeries: string[]): void {
+export function assertSeriesIntegrity(
+  posts: PostLike[],
+  knownSeries: Record<string, { topics: { order: number }[] }>,
+): void {
   const errors: string[] = [];
   const seen = new Map<string, string>();
   for (const p of posts) {
     const s = p.data.series;
     if (!s) continue;
-    if (!knownSeries.includes(s)) {
+    const known = knownSeries[s];
+    if (!known) {
       errors.push(`Post "${p.id}" has unknown series "${s}"`);
       continue;
     }
-    const key = `${s}#${p.data.seriesOrder}`;
+    const order = p.data.seriesOrder;
+    if (order === undefined) {
+      errors.push(`Post "${p.id}" is in series "${s}" but has no seriesOrder`);
+      continue;
+    }
+    if (!known.topics.some((t) => t.order === order)) {
+      errors.push(
+        `Post "${p.id}" has seriesOrder ${order} but series "${s}" has no topic ${order}; add the topic to src/data/series.ts`,
+      );
+      continue;
+    }
+    const key = `${s}#${order}`;
     const other = seen.get(key);
     if (other) {
-      errors.push(`Posts "${other}" and "${p.id}" share seriesOrder ${p.data.seriesOrder} in series "${s}"`);
+      errors.push(`Posts "${other}" and "${p.id}" share seriesOrder ${order} in series "${s}"`);
     } else {
       seen.set(key, p.id);
     }
@@ -135,6 +178,35 @@ export function assertRoutablePostIds(posts: PostLike[]): void {
   if (bad.length) {
     throw new Error(
       `Post ids collide with reserved /writing/ routes or are malformed: ${bad.map((id) => `"${id}"`).join(', ')}. Rename the files.`,
+    );
+  }
+}
+
+const PLACEHOLDER_TAG = 'todo-replace-me';
+const TODO_WORD = /\bTODO\b/;
+
+/**
+ * Fail the build when a non-draft post still carries template placeholder text. Drafts are
+ * exempt (they are allowed to be unfinished); everything else would go live unattended.
+ */
+export function assertNoPlaceholders(posts: PostLike[]): void {
+  const errors: string[] = [];
+  for (const p of posts) {
+    if (p.data.draft) continue;
+    const reasons: string[] = [];
+    if (p.data.tags.some((t) => tagSlug(t) === PLACEHOLDER_TAG)) reasons.push(`tag "${PLACEHOLDER_TAG}"`);
+    for (const field of ['title', 'description'] as const) {
+      const v = p.data[field];
+      if (TODO_WORD.test(v) || v.includes('PLACEHOLDER')) reasons.push(`${field} contains TODO/PLACEHOLDER`);
+    }
+    if (p.body && (/^[ \t]*TODO\b/m.test(p.body) || p.body.includes('PLACEHOLDER'))) {
+      reasons.push('body contains TODO/PLACEHOLDER');
+    }
+    if (reasons.length) errors.push(`"${p.id}": ${reasons.join('; ')}`);
+  }
+  if (errors.length) {
+    throw new Error(
+      `Placeholder text in published posts (finish them or set draft: true):\n${errors.join('\n')}`,
     );
   }
 }

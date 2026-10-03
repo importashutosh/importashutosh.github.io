@@ -12,7 +12,7 @@ import TOC from '../components/TOC.astro';
 import SeriesNav from '../components/SeriesNav.astro';
 import RelatedPosts from '../components/RelatedPosts.astro';
 import { getPublishedPosts } from '../lib/collection';
-import { readingMinutes, tagSlug } from '../lib/posts';
+import { readingMinutes, uniqueTags } from '../lib/posts';
 import { postCanonical } from '../lib/meta';
 import { absoluteUrl } from '../lib/url';
 import siteConfig from '../../site.config';
@@ -28,10 +28,7 @@ const canonical = postCanonical(post);
 const minutes = readingMinutes(post.body ?? '');
 const fmt = (d: Date) =>
   d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
-const seen = new Set<string>();
-const chips = tags
-  .map((t) => ({ label: t.trim(), slug: tagSlug(t) }))
-  .filter((c) => c.slug && !seen.has(c.slug) && seen.add(c.slug));
+const chips = uniqueTags(tags);
 const showUpdated = updated && updated.getTime() > date.getTime();
 ---
 
