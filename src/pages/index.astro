@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { absoluteUrl } from '../lib/url';
 import {
   person, hero, stats, products, clients, skills,
   experience, education, faq
@@ -18,9 +19,35 @@ const faqSchema = {
     }
   }))
 };
+
+const personSchema = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": person.name,
+  "jobTitle": person.title,
+  "worksFor": {
+    "@type": "Organization",
+    "name": person.company
+  },
+  "url": absoluteUrl('/'),
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Gurugram",
+    "addressCountry": "IN"
+  },
+  "sameAs": [person.linkedin, person.github],
+  "award": person.award,
+  "knowsAbout": [
+    "Data Engineering", "Customer Data Platform", "GenAI", "LangGraph",
+    "Apache Kafka", "ClickHouse", "LLM", "Machine Learning", "Product Management",
+    "Agentic AI", "MCP Gateway", "Voice AI"
+  ]
+};
 ---
 
 <Layout>
+  <script slot="head" type="application/ld+json" set:html={JSON.stringify(personSchema)} />
+
   <!-- FAQ schema injected in page body for AEO -->
   <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
 

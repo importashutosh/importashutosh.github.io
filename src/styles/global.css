@@ -15,7 +15,7 @@
   --accent-soft: #24405F;
 
   --font-display: 'IBM Plex Serif', 'Source Serif Pro', Georgia, serif;
-  --font-body: 'Inter', 'IBM Plex Sans', system-ui, sans-serif;
+  --font-body: 'Inter Variable', 'Inter', 'IBM Plex Sans', system-ui, sans-serif;
 
   /* Fixed type scale, ratio 1.25 */
   --fs-2xs: 0.75rem;    /* 12px */
