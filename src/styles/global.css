@@ -814,3 +814,4 @@ a.series-topic-link:focus-visible { outline: 2px solid var(--accent); outline-of
 /* ── Home: latest writing + hero text links ─────────────────────── */
 .latest-writing-links { display: flex; flex-wrap: wrap; gap: 4px 24px; margin: 16px 0 0; font-size: var(--fs-sm); }
 .hero-ctas { align-items: center; }
+.profile-card .btn-sm, #footer-cta { min-height: 44px; }
