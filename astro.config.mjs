@@ -19,6 +19,8 @@ export default defineConfig({
     // inline SVG at build time; .mdx inherits it. Heading ids still come from Astro; the
     // "#" permalinks are added in PostLayout's script. The Shiki theme is the light GitHub
     // one: AA contrast for every token on its #fff background (comment colour 4.8:1).
+    // A local build containing a mermaid fence needs `npx playwright install chromium`
+    // (builds without mermaid fences never launch Chromium).
     processor: unified({
       rehypePlugins: [[rehypeMermaid, { strategy: 'inline-svg' }]],
     }),
