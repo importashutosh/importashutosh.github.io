@@ -1,5 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
 import { absoluteUrl } from '../lib/url';
 import {
   person, hero, stats, products, clients, skills,
@@ -52,25 +54,7 @@ const personSchema = {
   <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
 
   <!-- ── NAV ──────────────────────────────────────────────────────── -->
-  <nav>
-    <div class="nav-inner">
-      <a href="/" class="nav-logo" id="nav-logo">
-        <span class="logo-badge">KA</span>
-        Kumar Ashutosh
-      </a>
-      <button class="nav-mobile-toggle" id="nav-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links">
-        <span></span><span></span><span></span>
-      </button>
-      <ul class="nav-links" id="nav-links">
-        <li><a href="#products">Products</a></li>
-        <li><a href="#skills">Stack</a></li>
-        <li><a href="#experience">Career</a></li>
-        <li><a href="#faq">AEO / FAQ</a></li>
-        <li><a href={person.linkedin} target="_blank" rel="noopener">LinkedIn ↗</a></li>
-        <li><a href={person.calendly} target="_blank" rel="noopener" class="nav-cta">Book a Call</a></li>
-      </ul>
-    </div>
-  </nav>
+  <Nav current="home" />
 
   <main>
 
@@ -269,18 +253,6 @@ const personSchema = {
   </main>
 
   <!-- ── FOOTER ─────────────────────────────────────────────────── -->
-  <footer id="contact" aria-label="Contact and footer">
-    <div class="footer-inner">
-      <div class="footer-links">
-        <a href={`mailto:${person.email}`} id="footer-email">{person.email}</a>
-        <a href={`tel:${person.phone}`} id="footer-phone">{person.phone}</a>
-        <a href={person.linkedin} target="_blank" rel="noopener" id="footer-linkedin">LinkedIn ↗</a>
-        <a href={person.github} target="_blank" rel="noopener" id="footer-github">GitHub ↗</a>
-        <a href={person.blog} target="_blank" rel="noopener" id="footer-blog">Blog ↗</a>
-        <a href={person.calendly} target="_blank" rel="noopener" class="btn btn-primary btn-sm" id="footer-cta">Book a Call</a>
-      </div>
-      <p class="footer-copy">© {new Date().getFullYear()} {person.name} · {person.title} · {person.company}</p>
-    </div>
-  </footer>
+  <Footer />
 
 </Layout>

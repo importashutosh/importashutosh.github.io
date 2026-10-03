@@ -490,6 +490,25 @@ footer {
 }
 .footer-links a:hover { color: var(--ink); }
 .footer-copy { font-size: var(--fs-2xs); color: var(--ink-muted); }
+.footer-meta { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; text-align: right; }
+.footer-legal { display: flex; flex-wrap: wrap; gap: 18px; justify-content: flex-end; }
+.footer-legal a {
+  font-size: var(--fs-2xs); color: var(--ink-muted); text-decoration: none;
+  transition: color 0.18s var(--ease);
+}
+.footer-legal a:hover { color: var(--ink); }
+@media (max-width: 640px) {
+  .footer-meta { align-items: flex-start; text-align: left; }
+  .footer-legal { justify-content: flex-start; }
+}
+
+/* ── Text link ──────────────────────────────────────────────────── */
+.text-link {
+  display: inline-flex; align-items: center; min-height: 44px;
+  color: var(--ink-muted); text-decoration: underline; text-underline-offset: 3px;
+  transition: color 0.18s var(--ease);
+}
+.text-link:hover { color: var(--ink); }
 
 /* ── Scroll reveal ──────────────────────────────────────────────── */
 .reveal {
