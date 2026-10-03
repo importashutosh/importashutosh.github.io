@@ -2,6 +2,8 @@
 import { defineConfig } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
 import mdx from '@astrojs/mdx';
+import { unified } from '@astrojs/markdown-remark';
+import rehypeMermaid from 'rehype-mermaid';
 import sitemap from '@astrojs/sitemap';
 import siteConfig from './site.config.ts';
 
@@ -13,9 +15,15 @@ export default defineConfig({
     sitemap({ filter: (page) => !page.includes('/writing/tags/') }),
   ],
   markdown: {
-    // Heading ids come from Astro's built-in Sätteri pipeline; the "#" permalinks are
-    // added in PostLayout's script. github-light: AA contrast for every token on its
-    // #fff background (comment colour #6a737d is 4.8:1).
+    // Unified (not the default Sätteri) so rehype-mermaid can render mermaid fences to
+    // inline SVG at build time; .mdx inherits it. Heading ids still come from Astro; the
+    // "#" permalinks are added in PostLayout's script. The Shiki theme is the light GitHub
+    // one: AA contrast for every token on its #fff background (comment colour 4.8:1).
+    processor: unified({
+      rehypePlugins: [[rehypeMermaid, { strategy: 'inline-svg' }]],
+    }),
+    // Mermaid blocks must reach rehype-mermaid untouched by Shiki.
+    syntaxHighlight: { type: 'shiki', excludeLangs: ['mermaid'] },
     shikiConfig: { theme: 'github-light' },
   },
   vite: {
